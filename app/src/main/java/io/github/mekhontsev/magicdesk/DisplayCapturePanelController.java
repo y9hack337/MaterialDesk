@@ -104,7 +104,7 @@ final class DisplayCapturePanelController {
 
         mScreenshotAction = mUi.actionButton(
                 R.string.action_screenshot,
-                DesktopUiFactory.COLOR_CYAN);
+                DesktopUiFactory.COLOR_ACCENT);
         mScreenshotAction.setOnClickListener(view ->
                 mActivity.captureDesktopScreenshot());
         addGridButton(actions, mScreenshotAction, 2);
@@ -321,23 +321,13 @@ final class DisplayCapturePanelController {
                 : mAudioModeButtons.entrySet()) {
             final boolean selected = entry.getKey() == mSettings.audioMode;
             entry.getValue().setAlpha(selected ? 1f : 0.72f);
-            entry.getValue().setBackground(mUi.rounded(
-                    DesktopUiFactory.COLOR_PANEL_ALT,
-                    dp(10),
-                    selected
-                            ? DesktopUiFactory.COLOR_CYAN
-                            : DesktopUiFactory.COLOR_PANEL_ALT));
+            entry.getValue().setBackground(mUi.segmentBackground(selected));
         }
         for (final Map.Entry<Integer, Button> entry
                 : mScaleButtons.entrySet()) {
             final boolean selected = entry.getKey().intValue()
                     == mSettings.scalePercent;
-            entry.getValue().setBackground(mUi.rounded(
-                    DesktopUiFactory.COLOR_PANEL_ALT,
-                    dp(10),
-                    selected
-                            ? DesktopUiFactory.COLOR_CYAN
-                            : DesktopUiFactory.COLOR_PANEL_ALT));
+            entry.getValue().setBackground(mUi.segmentBackground(selected));
         }
         if (mBitrateSlider != null
                 && mBitrateSlider.getProgress() != mSettings.bitrateMbps) {

@@ -652,6 +652,15 @@ final class DesktopPanelWindowController {
                         || (panel == mVisiblePanel && mVisibleAdded));
     }
 
+    /**
+     * Requested and actually on screen. Toggles use this, so a panel whose
+     * window was removed without clearing its request opens on the next
+     * click instead of silently "closing".
+     */
+    boolean isShowing(final View panel) {
+        return isRequested(panel) && isVisible(panel);
+    }
+
     boolean isRequested(final View panel) {
         return panel != null
                 && ((panel == mChildPanel && mChildRequested)
@@ -793,10 +802,10 @@ final class DesktopPanelWindowController {
             return false;
         }
         for (final var window : java.util.List.copyOf(mShellWindows)) window.attach();
-        if (!updateHostFocus()) {
-            return true;
-        }
-        if (mKeyboardShell != null) mKeyboardShell.applyKeyboard(true);
+        // Panels draw and accept pointer input at once. The task focus
+        // acknowledgement can be ordered behind an application launch that is
+        // still waiting for its task, so only keyboard focus, the IME and
+        // dialogs wait for it; the ready callback re-enters here.
         boolean success = true;
         if (mVisibleRequested && !mVisibleAdded) {
             success &= addVisiblePanel();
@@ -807,6 +816,10 @@ final class DesktopPanelWindowController {
         if (mTransientRequested && !mTransientAdded) {
             success &= addTransientPanel();
         }
+        if (!updateHostFocus()) {
+            return success;
+        }
+        if (mKeyboardShell != null) mKeyboardShell.applyKeyboard(true);
         if (mDialogFactory != null && mDialog == null) {
             success &= createDialog();
         }

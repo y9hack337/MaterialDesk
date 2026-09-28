@@ -63,7 +63,7 @@ final class DeviceSetupView {
 
         mSummary = new TextView(mActivity);
         mSummary.setText(R.string.setup_status_checking);
-        mSummary.setTextColor(DesktopUiFactory.COLOR_CYAN);
+        mSummary.setTextColor(DesktopUiFactory.COLOR_ACCENT);
         mSummary.setTextSize(16);
         mSummary.setTypeface(Typeface.DEFAULT_BOLD);
         mSummary.setPadding(dp(12), dp(10), dp(12), dp(10));
@@ -118,12 +118,12 @@ final class DeviceSetupView {
         actions.setPadding(0, dp(12), 0, 0);
 
         mPrimaryAction = createActionButton(
-                DesktopUiFactory.COLOR_CYAN);
+                DesktopUiFactory.COLOR_ACCENT);
         actions.addView(mPrimaryAction, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, dp(52)));
 
         mDiagnosticsAction = createActionButton(
-                DesktopUiFactory.COLOR_CYAN);
+                DesktopUiFactory.COLOR_ACCENT);
         mDiagnosticsAction.setText(R.string.action_diagnostics);
         mDiagnosticsAction.setOnClickListener(view ->
                 mActivity.startActivity(

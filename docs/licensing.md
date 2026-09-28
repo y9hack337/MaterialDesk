@@ -1,12 +1,12 @@
 # Licensing and Source Availability
 
-MagicDesk is distributed under the GNU General Public License, version 3
+MaterialDesk is distributed under the GNU General Public License, version 3
 only (`GPL-3.0-only`); the complete terms are in [LICENSE](../LICENSE).
 Copyright (c) 2026 Dmitry Mekhontsev and contributors.
 
 Files carrying a separate compatible license retain that license and their
 copyright notices. In particular, the MIT notice applying to the original
-MagicDesk code is preserved in [LICENSES/MIT-MagicDesk.txt](../LICENSES/MIT-MagicDesk.txt).
+MaterialDesk code is preserved in [LICENSES/MIT-MaterialDesk.txt](../LICENSES/MIT-MaterialDesk.txt).
 Previously granted MIT permissions are not revoked. Third-party component
 licenses are listed in [THIRD_PARTY_NOTICES.md](../THIRD_PARTY_NOTICES.md).
 
@@ -38,7 +38,7 @@ Private, undistributed experiments do not need public publication.
 
 ## Embedded X11
 
-The MagicDesk X11 fork preserves Termux:X11's GPLv3 license, upstream history
+The MaterialDesk X11 fork preserves Termux:X11's GPLv3 license, upstream history
 and component notices. Keeping its sources in a separate repository does not
 change the licensing of the combined application. Its exact revision and
 nested sources must accompany APKs that include it.

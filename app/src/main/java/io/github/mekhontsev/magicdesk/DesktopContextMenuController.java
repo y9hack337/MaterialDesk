@@ -200,7 +200,7 @@ final class DesktopContextMenuController {
         prepareMenuTitle(mActivity.getString(R.string.action_start));
         addAction(
                 R.string.section_apps,
-                DesktopUiFactory.COLOR_CYAN,
+                DesktopUiFactory.COLOR_ACCENT,
                 true,
                 view -> mActivity.showStartSection(
                         StartMenuController.MENU_APPS, false));
@@ -255,7 +255,7 @@ if (RuntimeLimits.active().termux() && TermuxIntegration.isInstalled(mActivity))
                 ShellAccess.isReady(), view -> DisplaySwitchController.show(mActivity));
         addAction(
                 R.string.action_show_desktop,
-                DesktopUiFactory.COLOR_CYAN,
+                DesktopUiFactory.COLOR_ACCENT,
                 true,
                 view -> mActivity.toggleDesktopWorkspace());
         addAction(
@@ -313,17 +313,17 @@ if (RuntimeLimits.active().termux() && TermuxIntegration.isInstalled(mActivity))
 
         addAction(
                 R.string.action_new_file,
-                DesktopUiFactory.COLOR_CYAN,
+                DesktopUiFactory.COLOR_ACCENT,
                 true,
                 view -> mActivity.createDesktopFile(false));
         addAction(
                 R.string.action_new_folder,
-                DesktopUiFactory.COLOR_CYAN,
+                DesktopUiFactory.COLOR_ACCENT,
                 true,
                 view -> mActivity.createDesktopFile(true));
         addAction(
                 R.string.action_new_terminal_application,
-                DesktopUiFactory.COLOR_CYAN,
+                DesktopUiFactory.COLOR_ACCENT,
                 true,
                 view -> mActivity.createCommandApplication());
         final boolean hasClipboardContent =
@@ -360,7 +360,7 @@ if (RuntimeLimits.active().termux() && TermuxIntegration.isInstalled(mActivity))
                 view -> mActivity.useDefaultDesktopWallpaper());
         addAction(
                 R.string.action_refresh,
-                DesktopUiFactory.COLOR_CYAN,
+                DesktopUiFactory.COLOR_ACCENT,
                 true,
                 view -> {
                     mActivity.renderApps();
@@ -568,7 +568,7 @@ if (RuntimeLimits.active().termux() && TermuxIntegration.isInstalled(mActivity))
                 ? mActivity.getString(R.string.widget_default_name)
                 : target.widgetLabel);
         addAction(R.string.action_widget_move,
-                DesktopUiFactory.COLOR_CYAN, true,
+                DesktopUiFactory.COLOR_ACCENT, true,
                 view -> mActivity.beginDesktopWidgetMove(
                         target.appWidgetId));
         addAction(R.string.action_widget_wider,
@@ -690,7 +690,7 @@ if (RuntimeLimits.active().termux() && TermuxIntegration.isInstalled(mActivity))
                 state.task == null
                         ? R.string.action_open
                         : R.string.action_switch_to,
-                DesktopUiFactory.COLOR_CYAN,
+                DesktopUiFactory.COLOR_ACCENT,
                 true,
                 view -> {
                     if (state.task == null) {
@@ -789,7 +789,7 @@ if (RuntimeLimits.active().termux() && TermuxIntegration.isInstalled(mActivity))
             addAction(
                     shortcut.label,
                     shortcut.icon,
-                    DesktopUiFactory.COLOR_CYAN,
+                    DesktopUiFactory.COLOR_ACCENT,
                     true,
                     view -> {
                         if (state.destination == null) {

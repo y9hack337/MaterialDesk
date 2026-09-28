@@ -22,7 +22,7 @@ public final class DeviceSetupActivity extends Activity {
     private static final String TAG = "MagicDeskSetup";
     private static final String EXTRA_MANUAL = "manual_setup";
     private static final int REQUEST_NOTIFICATIONS = 1;
-    private static final int COLOR_CYAN = DesktopUiFactory.COLOR_CYAN;
+    private static final int COLOR_ACCENT = DesktopUiFactory.COLOR_ACCENT;
     private static final int COLOR_RED = DesktopUiFactory.COLOR_RED;
     private static final int COLOR_AMBER = DesktopUiFactory.COLOR_AMBER;
 
@@ -305,7 +305,7 @@ public final class DeviceSetupActivity extends Activity {
             return;
         }
         mSetupView.summary().setText(R.string.setup_status_ready);
-        mSetupView.summary().setTextColor(COLOR_CYAN);
+        mSetupView.summary().setTextColor(COLOR_ACCENT);
         mSetupView.primaryAction().setText(mManual
                 ? R.string.setup_action_done : R.string.setup_action_continue);
         mSetupView.primaryAction().setOnClickListener(view -> startMagicDesk());
@@ -323,7 +323,7 @@ public final class DeviceSetupActivity extends Activity {
         if (mSetupView.displayTargetValue() != null) {
             mSetupView.displayTargetValue().setText(displayTargetLabel(
                     mSessionProfile.displayTarget));
-            mSetupView.displayTargetValue().setTextColor(COLOR_CYAN);
+            mSetupView.displayTargetValue().setTextColor(COLOR_ACCENT);
         }
     }
 
@@ -517,7 +517,7 @@ public final class DeviceSetupActivity extends Activity {
         }
         if (statusResId != 0) {
             mSetupView.summary().setText(statusResId);
-            mSetupView.summary().setTextColor(COLOR_CYAN);
+            mSetupView.summary().setTextColor(COLOR_ACCENT);
         }
         mSetupView.primaryAction().setEnabled(!busy);
         mSetupView.diagnosticsAction().setEnabled(!busy);
@@ -528,7 +528,7 @@ public final class DeviceSetupActivity extends Activity {
     private void setStatusValue(
             final TextView view, final String text, final boolean ready) {
         view.setText(text);
-        view.setTextColor(ready ? COLOR_CYAN : COLOR_AMBER);
+        view.setTextColor(ready ? COLOR_ACCENT : COLOR_AMBER);
     }
 
     private void launchMagicDesk() {

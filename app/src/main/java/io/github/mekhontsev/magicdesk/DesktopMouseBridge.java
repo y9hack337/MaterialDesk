@@ -15,6 +15,8 @@ final class DesktopMouseBridge {
     private static final String HELPER_NAME =
             "libmagicdesk_uinput_bridge.so";
     private static final long RESTART_DELAY_MILLIS = 1_000L;
+    /** Linux high-resolution wheel units per detent. */
+    private static final int WHEEL_HI_RES_UNITS_PER_DETENT = 120;
     private final Object mLock = new Object();
     private final Context mContext;
     private final Runnable mStateChanged;
@@ -29,6 +31,7 @@ final class DesktopMouseBridge {
     private float mMoveRemainderX;
     private float mMoveRemainderY;
     private float mScrollRemainder;
+    private float mHorizontalScrollRemainder;
     private boolean mPrimaryButtonPressed;
 
     DesktopMouseBridge(
@@ -70,6 +73,7 @@ final class DesktopMouseBridge {
             mMoveRemainderX = 0.0f;
             mMoveRemainderY = 0.0f;
             mScrollRemainder = 0.0f;
+            mHorizontalScrollRemainder = 0.0f;
             mPrimaryButtonPressed = false;
             ++mGeneration;
             stream = mStream;
@@ -126,6 +130,12 @@ final class DesktopMouseBridge {
             command = "click-primary";
         } else if (button == MotionEvent.BUTTON_SECONDARY) {
             command = "click-secondary";
+        } else if (button == MotionEvent.BUTTON_TERTIARY) {
+            command = "click-middle";
+        } else if (button == MotionEvent.BUTTON_BACK) {
+            command = "click-back";
+        } else if (button == MotionEvent.BUTTON_FORWARD) {
+            command = "click-forward";
         } else {
             return false;
         }
@@ -158,20 +168,29 @@ final class DesktopMouseBridge {
         return false;
     }
 
-    boolean scrollPointer(final float amount) {
+    /**
+     * Scrolls by wheel detents; positive horizontal is right. Fractions are
+     * sent as high-resolution units (1/120 detent) so scrolling stays smooth.
+     */
+    boolean scrollPointer(final float vertical, final float horizontal) {
         final ShellStreamHandle stream;
-        final int steps;
+        final int units;
+        final int horizontalUnits;
         synchronized (mLock) {
             if (!mRequested || !mReady || mStream == null) {
                 return false;
             }
-            mScrollRemainder += amount;
-            steps = (int) mScrollRemainder;
-            mScrollRemainder -= steps;
+            mScrollRemainder += vertical * WHEEL_HI_RES_UNITS_PER_DETENT;
+            units = (int) mScrollRemainder;
+            mScrollRemainder -= units;
+            mHorizontalScrollRemainder += horizontal * WHEEL_HI_RES_UNITS_PER_DETENT;
+            horizontalUnits = (int) mHorizontalScrollRemainder;
+            mHorizontalScrollRemainder -= horizontalUnits;
             stream = mStream;
         }
-        return steps == 0
-                || writePointerControl(stream, "scroll " + steps);
+        return units == 0 && horizontalUnits == 0
+                || writePointerControl(stream,
+                        "scroll-hr " + units + " " + horizontalUnits);
     }
 
     DesktopInputDiagnostics.BridgeSnapshot captureDiagnostics() {

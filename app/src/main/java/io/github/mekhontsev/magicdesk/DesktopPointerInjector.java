@@ -9,6 +9,7 @@ import android.view.MotionEvent;
 
 /** Injects display-targeted pointer actions. */
 public final class DesktopPointerInjector {
+    private static final int INJECTION_MODE_ASYNC = 0;
     private static final int INJECTION_MODE_WAIT_FOR_RESULT = 1;
 
     private static volatile InjectionContext sInjectionContext;
@@ -43,6 +44,50 @@ public final class DesktopPointerInjector {
         } catch (ReflectiveOperationException error) {
             throw new IllegalStateException(
                     "could not inject pointer click", error);
+        }
+    }
+
+    static final int PINCH_DOWN = 0;
+    static final int PINCH_MOVE = 1;
+    static final int PINCH_UP = 2;
+
+    /**
+     * One stage of a two-finger touch pinch: DOWN places both fingers, MOVE
+     * moves them, UP lifts both. Injection is asynchronous so a stream of
+     * moves never waits for the application.
+     */
+    static void injectTouchPinch(
+            final int displayId,
+            final long downTime,
+            final int stage,
+            final float x0,
+            final float y0,
+            final float x1,
+            final float y1) throws ReflectiveOperationException {
+        validateDisplay(displayId);
+        final InjectionContext context = injectionContext();
+        final int second = 1 << MotionEvent.ACTION_POINTER_INDEX_SHIFT;
+        switch (stage) {
+            case PINCH_DOWN:
+                context.injectTouches(displayId, downTime, MotionEvent.ACTION_DOWN,
+                        new float[] {x0}, new float[] {y0});
+                context.injectTouches(displayId, downTime,
+                        MotionEvent.ACTION_POINTER_DOWN | second,
+                        new float[] {x0, x1}, new float[] {y0, y1});
+                break;
+            case PINCH_MOVE:
+                context.injectTouches(displayId, downTime, MotionEvent.ACTION_MOVE,
+                        new float[] {x0, x1}, new float[] {y0, y1});
+                break;
+            case PINCH_UP:
+                context.injectTouches(displayId, downTime,
+                        MotionEvent.ACTION_POINTER_UP | second,
+                        new float[] {x0, x1}, new float[] {y0, y1});
+                context.injectTouches(displayId, downTime, MotionEvent.ACTION_UP,
+                        new float[] {x0}, new float[] {y0});
+                break;
+            default:
+                throw new IllegalArgumentException("unknown pinch stage " + stage);
         }
     }
 
@@ -201,6 +246,39 @@ public final class DesktopPointerInjector {
                     INJECTION_MODE_WAIT_FOR_RESULT,
                     KeyCharacterMap.VIRTUAL_KEYBOARD,
                     1.0f);
+        }
+
+        void injectTouches(
+                final int displayId,
+                final long downTime,
+                final int action,
+                final float[] xs,
+                final float[] ys) throws ReflectiveOperationException {
+            final int count = xs.length;
+            final MotionEvent.PointerProperties[] properties =
+                    new MotionEvent.PointerProperties[count];
+            final MotionEvent.PointerCoords[] coordinates =
+                    new MotionEvent.PointerCoords[count];
+            for (int index = 0; index < count; index++) {
+                properties[index] = new MotionEvent.PointerProperties();
+                properties[index].id = index;
+                properties[index].toolType = MotionEvent.TOOL_TYPE_FINGER;
+                coordinates[index] = new MotionEvent.PointerCoords();
+                coordinates[index].x = xs[index];
+                coordinates[index].y = ys[index];
+                coordinates[index].pressure = 1.0f;
+                coordinates[index].size = 1.0f;
+            }
+            final MotionEvent event = MotionEvent.obtain(
+                    downTime, SystemClock.uptimeMillis(), action, count,
+                    properties, coordinates, 0, 0, 1.0f, 1.0f,
+                    KeyCharacterMap.VIRTUAL_KEYBOARD, 0,
+                    InputDevice.SOURCE_TOUCHSCREEN, 0);
+            try {
+                injectEvent(displayId, event, INJECTION_MODE_ASYNC);
+            } finally {
+                event.recycle();
+            }
         }
 
         void injectMouseHover(

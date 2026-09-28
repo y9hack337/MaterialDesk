@@ -2,7 +2,7 @@ package io.github.mekhontsev.magicdesk;
 
 import android.graphics.Rect;
 
-import static io.github.mekhontsev.magicdesk.DesktopUiFactory.COLOR_CYAN;
+import static io.github.mekhontsev.magicdesk.DesktopUiFactory.COLOR_ACCENT;
 import static io.github.mekhontsev.magicdesk.DesktopUiFactory.COLOR_MUTED;
 import static io.github.mekhontsev.magicdesk.DesktopUiFactory.COLOR_PANEL;
 import static io.github.mekhontsev.magicdesk.DesktopUiFactory.COLOR_PANEL_ALT;
@@ -82,7 +82,7 @@ final class NotificationCenterController {
         mPanel = new LinearLayout(mActivity);
         mPanel.setOrientation(LinearLayout.VERTICAL);
         mPanel.setPadding(dp(14), dp(14), dp(14), dp(12));
-        mPanel.setBackground(mUi.rounded(COLOR_PANEL, dp(8), COLOR_CYAN));
+        mPanel.setBackground(mUi.panelSurface());
         mPanel.setVisibility(View.GONE);
         mPanel.setClickable(true);
         mPanel.setFocusable(true);
@@ -129,7 +129,7 @@ final class NotificationCenterController {
         if (panels == null || mPanel == null) {
             return;
         }
-        if (panels.isRequested(mPanel)) {
+        if (panels.isShowing(mPanel)) {
             mActivity.hideAllPanels();
             return;
         }
@@ -253,7 +253,7 @@ final class NotificationCenterController {
         header.addView(title, new LinearLayout.LayoutParams(
                 0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
 
-        final Button clear = mUi.smallButton(
+        final Button clear = mUi.headerButton(
                 R.string.action_clear_notifications, COLOR_PANEL_ALT);
         clear.setEnabled(hasClearableNotifications());
         clear.setOnClickListener(view -> {
@@ -264,16 +264,11 @@ final class NotificationCenterController {
                                 R.string.status_notifications_unavailable));
             }
         });
-        header.addView(clear, new LinearLayout.LayoutParams(
-                dp(82), LinearLayout.LayoutParams.WRAP_CONTENT));
+        header.addView(clear, DesktopUiFactory.headerButtonParams(dp(40), dp(8)));
         final Button close =
-                mUi.smallButton(R.string.action_close, COLOR_PANEL_ALT);
+                mUi.headerButton(R.string.action_close, COLOR_PANEL_ALT);
         close.setOnClickListener(view -> mActivity.hideAllPanels());
-        final LinearLayout.LayoutParams closeParams =
-                new LinearLayout.LayoutParams(
-                        dp(72), LinearLayout.LayoutParams.WRAP_CONTENT);
-        closeParams.setMargins(dp(8), 0, 0, 0);
-        header.addView(close, closeParams);
+        header.addView(close, DesktopUiFactory.headerButtonParams(dp(40), dp(8)));
         mPanel.addView(header, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT));
@@ -313,7 +308,7 @@ final class NotificationCenterController {
                 LinearLayout.LayoutParams.WRAP_CONTENT));
         if (showSettings) {
             final Button settings = mUi.actionButton(
-                    R.string.action_notification_access, COLOR_CYAN);
+                    R.string.action_notification_access, COLOR_ACCENT);
             settings.setOnClickListener(
                     view -> openNotificationAccessSettings());
             final LinearLayout.LayoutParams params =
@@ -335,9 +330,9 @@ final class NotificationCenterController {
         item.setPadding(dp(12), dp(10), dp(10), dp(10));
         final int borderColor =
                 entry.importance >= NotificationManager.IMPORTANCE_HIGH
-                        ? COLOR_CYAN : COLOR_PANEL_ALT;
+                        ? COLOR_ACCENT : COLOR_PANEL_ALT;
         item.setBackground(
-                mUi.rounded(COLOR_PANEL_ALT, dp(8), borderColor));
+                mUi.rounded(COLOR_PANEL_ALT, dp(16), borderColor));
         item.setClickable(true);
         item.setFocusable(true);
         addItemHeader(item, entry, popup);
@@ -456,7 +451,7 @@ final class NotificationCenterController {
         for (int index = 0; index < count; index++) {
             final DesktopNotificationListenerService.ActionEntry action =
                     entry.actions.get(index);
-            final Button button = mUi.smallButton(action.title, COLOR_CYAN);
+            final Button button = mUi.smallButton(action.title, COLOR_ACCENT);
             button.setOnClickListener(view -> invokeAction(entry, action));
             final LinearLayout.LayoutParams params =
                     new LinearLayout.LayoutParams(

@@ -2,8 +2,6 @@ package io.github.mekhontsev.magicdesk;
 
 import android.content.Context;
 import android.graphics.Bitmap;
-import android.graphics.BitmapFactory;
-import android.os.ParcelFileDescriptor;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -42,8 +40,8 @@ final class DesktopFileRepository {
             if (desktopEntry == null
                     && !record.directory
                     && previewsRemaining > 0
-                    && record.mimeType.startsWith("image/")) {
-                thumbnail = loadImageThumbnail(record.relativePath);
+                    && MediaThumbnails.supports(record.mimeType)) {
+                thumbnail = loadThumbnail(record);
                 previewsRemaining--;
             }
             files.add(new DesktopFile(
@@ -60,31 +58,13 @@ final class DesktopFileRepository {
         return files;
     }
 
-    private Bitmap loadImageThumbnail(final String relativePath) {
-        final BitmapFactory.Options bounds = new BitmapFactory.Options();
-        bounds.inJustDecodeBounds = true;
-        try (ParcelFileDescriptor descriptor =
-                     ShellAccess.openDesktopFile(relativePath)) {
-            BitmapFactory.decodeFileDescriptor(
-                    descriptor.getFileDescriptor(), null, bounds);
-        } catch (IOException | RuntimeException error) {
-            return null;
-        }
-        final int largest = Math.max(bounds.outWidth, bounds.outHeight);
-        if (largest <= 0) {
-            return null;
-        }
-        final BitmapFactory.Options decode = new BitmapFactory.Options();
-        decode.inSampleSize = 1;
-        while (largest / (decode.inSampleSize * 2) >= THUMBNAIL_SIZE) {
-            decode.inSampleSize *= 2;
-        }
-        try (ParcelFileDescriptor descriptor =
-                     ShellAccess.openDesktopFile(relativePath)) {
-            return BitmapFactory.decodeFileDescriptor(
-                    descriptor.getFileDescriptor(), null, decode);
-        } catch (IOException | RuntimeException error) {
-            return null;
-        }
+    /** Photo or video preview, decoded at most once per file version. */
+    private static Bitmap loadThumbnail(final DesktopFileInfo record) {
+        return MediaThumbnails.load(
+                MediaThumbnails.key(ShellDesktopDirectory.ABSOLUTE_PATH + "/" + record.relativePath,
+                        record.size, record.modified, THUMBNAIL_SIZE),
+                record.mimeType,
+                THUMBNAIL_SIZE,
+                () -> ShellAccess.openDesktopFile(record.relativePath));
     }
 }

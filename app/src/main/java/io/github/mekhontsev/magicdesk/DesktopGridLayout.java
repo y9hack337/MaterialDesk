@@ -2,10 +2,16 @@ package io.github.mekhontsev.magicdesk;
 
 import android.annotation.SuppressLint;
 import android.content.Context;
+import android.graphics.Canvas;
+import android.graphics.Paint;
+import android.graphics.RectF;
 import android.util.AttributeSet;
 import android.view.DragEvent;
 import android.view.View;
 import android.view.ViewGroup;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /** Desktop items own clicks; empty cells pass touch gestures to the wallpaper parent. */
 @SuppressLint("ViewConstructor")
@@ -23,6 +29,11 @@ final class DesktopGridLayout extends ViewGroup {
     private Listener mListener;
     private int mColumns;
     private int mRows;
+    /** Rubber-band selection rectangle, or null when no marquee is shown. */
+    private int[] mSelectionBounds;
+    private final RectF mSelectionRect = new RectF();
+    private final Paint mSelectionFill = new Paint(Paint.ANTI_ALIAS_FLAG);
+    private final Paint mSelectionStroke = new Paint(Paint.ANTI_ALIAS_FLAG);
 
     DesktopGridLayout(
             final Context context,
@@ -44,6 +55,44 @@ final class DesktopGridLayout extends ViewGroup {
         mCellHeight = Math.max(1, cellHeight);
         setClipChildren(false);
         setOnDragListener((view, event) -> handleDrag(event, 0, 0));
+        mSelectionFill.setColor(DesktopUiFactory.withAlpha(DesktopUiFactory.COLOR_ACCENT, 0.18f));
+        mSelectionStroke.setStyle(Paint.Style.STROKE);
+        mSelectionStroke.setStrokeWidth(context.getResources().getDisplayMetrics().density);
+        mSelectionStroke.setColor(DesktopUiFactory.COLOR_ACCENT);
+    }
+
+    /** Shows the marquee rectangle; null hides it. */
+    void setSelectionBounds(final int[] bounds) {
+        mSelectionBounds = bounds;
+        invalidate();
+    }
+
+    /** Item identities whose views intersect the marquee. */
+    List<String> itemIdsWithin(final int[] bounds) {
+        final List<String> itemIds = new ArrayList<>();
+        for (int index = 0; index < getChildCount(); index++) {
+            final View child = getChildAt(index);
+            if (child.getVisibility() == VISIBLE
+                    && DesktopSelectionMarquee.intersects(bounds,
+                            child.getLeft(), child.getTop(),
+                            child.getRight(), child.getBottom())) {
+                itemIds.add(((LayoutParams) child.getLayoutParams()).itemId);
+            }
+        }
+        return itemIds;
+    }
+
+    @Override
+    protected void dispatchDraw(final Canvas canvas) {
+        super.dispatchDraw(canvas);
+        if (mSelectionBounds == null) {
+            return;
+        }
+        mSelectionRect.set(mSelectionBounds[0], mSelectionBounds[1],
+                mSelectionBounds[2], mSelectionBounds[3]);
+        final float radius = 4.0f * getResources().getDisplayMetrics().density;
+        canvas.drawRoundRect(mSelectionRect, radius, radius, mSelectionFill);
+        canvas.drawRoundRect(mSelectionRect, radius, radius, mSelectionStroke);
     }
 
     void setListener(final Listener listener) {

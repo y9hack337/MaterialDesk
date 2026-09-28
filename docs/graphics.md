@@ -124,7 +124,7 @@ that the client presented a frame.
 
 X11's native `LorieGraphics` contract receives a host-owned implementation from
 `x11-runtime`. The engine owns X protocol, output selection, window families and
-Present ordering; it does not know Java classes or MagicDesk placement. Its
+Present ordering; it does not know Java classes or MaterialDesk placement. Its
 shared pixel mutex covers producer access through rendering completion. Android
 buffer acquisition and presentation occur outside that mutex. Present serials
 are acknowledged only after reading their source buffers has completed. A

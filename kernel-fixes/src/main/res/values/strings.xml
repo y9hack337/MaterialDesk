@@ -1,7 +1,7 @@
 <resources>
-    <string name="app_name">MagicDesk Kernel Fixes</string>
+    <string name="app_name">MaterialDesk Kernel Fixes</string>
     <string name="screen_title">Kernel fixes</string>
-    <string name="screen_subtitle">Optional, device-specific fixes distributed separately from MagicDesk</string>
+    <string name="screen_subtitle">Optional, device-specific fixes distributed separately from MaterialDesk</string>
     <string name="security_warning">Kernel modules run with full kernel privileges. This add-on activates a fix only after verifying the exact kernel, stock driver, and module checksums.</string>
     <string name="xr_fix_title">Nubia DP hot-plug recovery</string>
     <string name="xr_fix_device">Verified for RedMagic 11 Pro NX809J and the documented Android 16 firmware profile.</string>

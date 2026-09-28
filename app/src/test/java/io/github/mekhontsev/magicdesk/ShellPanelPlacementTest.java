@@ -14,6 +14,16 @@ public final class ShellPanelPlacementTest {
         assertEquals(work, layout.snapshot().workArea());
     }
 
+    @Test public void fullOutputCoversTheTaskbarToo() {
+        assertEquals(new ShellBounds(0, 0, 1920, 1080), place(desktop(),
+                ShellPanelPlacement.fullOutput()));
+    }
+
+    @Test public void bottomOnlyAnchorCentersDrawerAboveTaskbarGap() {
+        assertEquals(new ShellBounds(680, 384, 1240, 1004), place(desktop(),
+                ShellPanelPlacement.anchored(560, 620, ShellSurface.BOTTOM, 0, 0, 0, 12)));
+    }
+
     @Test public void pointerPopupFlipsAtBothEdgesAndConservesMargin() {
         assertEquals(new ShellBounds(1492, 792, 1892, 992), place(desktop(),
                 ShellPanelPlacement.atPointer(1900, 1000, 400, 200, 8)));

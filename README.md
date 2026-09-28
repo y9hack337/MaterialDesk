@@ -1,8 +1,22 @@
-# MagicDesk
+# MaterialDesk
+
+> **This is a fork.** MaterialDesk is a fork of
+> [MagicDesk](https://github.com/mekhontsev/magicdesk) with improvements and a
+> full Material 3 redesign of the interface: a new app drawer, Files, settings,
+> quick controls, taskbar and calendar, a rebuilt phone touchpad with laptop
+> gestures (pinch zoom, Back/Forward flick, invertible scrolling), an area
+> screenshot tool, Android Quick Settings tiles on the desktop, and more.
+>
+> **Please do not report problems with this fork to the original author.** Bugs
+> and questions about MaterialDesk belong in
+> [this repository's issues](https://github.com/y9hack337/MaterialDesk/issues).
+> The community links below belong to the original project.
+
+![MaterialDesk redesigned desktop](docs/images/materialdesk-redesign.jpg)
 
 **An open-source Android workstation.**
 
-MagicDesk combines **native Android app windows, Linux graphical applications,
+MaterialDesk combines **native Android app windows, Linux graphical applications,
 full-featured terminals and independent desktops on multiple displays**. Add a
 real file-based desktop, per-app interface scaling and programmable automation,
 and your phone becomes a workstation. Work on its own screen, on external
@@ -19,14 +33,14 @@ For privileged features, use [Shizuku](https://github.com/RikkaApps/Shizuku) on 
 service. Root is optional, and root users can limit that service to Android's
 shell UID 2000. **Termux terminals and Linux graphical applications also work without Shizuku,
 root or a Desktop session**, on the phone or an Android-allowed secondary display.
-MagicDesk can also complement your [existing desktop mode](#using-your-existing-desktop-mode),
+MaterialDesk can also complement your [existing desktop mode](#using-your-existing-desktop-mode),
 including Samsung DeX, with Linux graphical applications and Termux terminals.
 
-[Latest release](https://github.com/mekhontsev/magicdesk/releases/latest) |
-[Development APK](https://github.com/mekhontsev/magicdesk/releases/download/development/MagicDesk-development.apk) |
+[Latest release](https://github.com/y9hack337/MaterialDesk/releases/latest) |
+[Development APK](https://github.com/y9hack337/MaterialDesk/releases) |
 [Getting started](docs/getting-started.md)
 
-**Join the community: [Reddit r/MagicDesk](https://www.reddit.com/r/MagicDesk/) |
+**Join the community: [Reddit r/MaterialDesk](https://www.reddit.com/r/MaterialDesk/) |
 [Telegram](https://t.me/magicdesk_android)** |
 [Support bot](https://t.me/MagicDeskSupportBot)
 
@@ -37,11 +51,11 @@ not yet include every feature below.
 Android and Linux apps running locally on a REDMAGIC phone over HDMI, with
 Freeciv from Ubuntu/proot in its own Android window alongside a full XFCE desktop.
 
-![MagicDesk with native application windows and the calendar panel](docs/images/magicdesk-desktop.png)
+![MaterialDesk with native application windows and the calendar panel](docs/images/magicdesk-desktop.png)
 
 ## One Connected Workspace
 
-MagicDesk's strength is how its parts work together:
+MaterialDesk's strength is how its parts work together:
 
 - **Each screen can have its own desktop.** Keep a workspace on the phone and
   another on an external or virtual display. Each has its own windows, taskbar
@@ -95,7 +109,7 @@ implementation. You keep your Android applications, system keyboard and Termux
 environment.
 
 - Use Desktop on the phone, a wired monitor, an Android wireless display, or a
-  MagicDesk-created virtual display. Several displays can run their own Desktop
+  MaterialDesk-created virtual display. Several displays can run their own Desktop
   at the same time, with independent windows and Start menus.
 - Resize, snap, maximize, restore and move tasks between displays. True
   fullscreen is separate from a maximized freeform window.
@@ -109,7 +123,7 @@ environment.
 - Keep a real Desktop folder with files, folders and editable `.desktop`
   launchers, plus bundled or custom wallpaper.
 
-MagicDesk acquires Android's HOME role when the first Desktop starts and returns
+MaterialDesk acquires Android's HOME role when the first Desktop starts and returns
 the previous role state after the last one closes. A phone without its own
 Desktop has an ordinary Start surface: it launches phone apps in fullscreen and
 shows independent launch history by default. Recent follows the selected
@@ -136,7 +150,7 @@ Desktops running. If the display disappears, its tasks return to the phone.
 A later session can restore the same still-live tasks, not applications that
 Android or the user has closed. Closing Desktop does not remove its display.
 
-![MagicDesk with overlapping Termux and Firefox windows](docs/images/magicdesk-multitasking.png)
+![MaterialDesk with overlapping Termux and Firefox windows](docs/images/magicdesk-multitasking.png)
 
 ### Per-App DPI
 
@@ -155,13 +169,13 @@ are also available under **Settings > Application profiles**.
 The setting applies to running managed windows and is remembered for later
 Desktop sessions. It follows the app through freeform, snap, maximize and true
 fullscreen, using the selected display's density as its baseline. When the app
-returns to ordinary phone use, or Desktop closes, MagicDesk removes the active
+returns to ordinary phone use, or Desktop closes, MaterialDesk removes the active
 density override without forgetting your saved Desktop preference.
 
 Apps still choose their own layouts: reducing DPI can give an adaptive app
 more logical space, but cannot create a tablet interface it does not implement.
 Per-app DPI is a managed Desktop feature, not a system-wide override for an
-app outside MagicDesk's session.
+app outside MaterialDesk's session.
 
 ## Tools Without Desktop
 
@@ -178,7 +192,7 @@ properties, file handlers, Android document import, and drag and drop.
 
 Files, Desktop, Console, Android clipboard and View/Share intents share one
 content model. External apps receive scoped content-URI access to selected
-files, never MagicDesk's shell identity. **Save to MagicDesk Desktop** accepts
+files, never MaterialDesk's shell identity. **Save to MaterialDesk Desktop** accepts
 Android shares after confirmation. File operations do not require Desktop.
 
 The default workspace is `/storage/emulated/0/Desktop`. Display changes do not
@@ -188,12 +202,12 @@ implemented.
 
 ### A Full Terminal, With Or Without Desktop
 
-MagicDesk's terminal is an interactive PTY, not a command-output panel. Run
+MaterialDesk's terminal is an interactive PTY, not a command-output panel. Run
 editors, file managers, terminal dashboards and CLI agents with ANSI colors,
 scrollback, terminal mouse reporting and alternate-screen support. Android-shell
 and Termux sessions share the same renderer, controls and automation API.
 
-![MagicDesk terminal displaying Sixel graphics and Nerd Font alongside a root console using the shared CLI](docs/images/magicdesk-terminal.png)
+![MaterialDesk terminal displaying Sixel graphics and Nerd Font alongside a root console using the shared CLI](docs/images/magicdesk-terminal.png)
 
 *A gnuplot chart rendered through Sixel in a Termux-backed terminal, beside an
 optional root console running the built-in `magicdesk` CLI.*
@@ -219,12 +233,12 @@ optional root console running the built-in `magicdesk` CLI.*
 
 Application-controlled scrolling, including tmux, is smoothed when its redraws
 describe a coherent scroll. Other updates retain normal terminal behavior;
-MagicDesk does not require application-specific scrolling hooks.
+MaterialDesk does not require application-specific scrolling hooks.
 
 Closing an ordinary terminal window detaches the view and retains its shell and
 programs. Closing a managed tmux window detaches its client; tmux keeps its server
 session and programs. **Close Desktop** does not end retained terminals. Local
-PTYs do not survive MagicDesk process death or APK replacement; independently
+PTYs do not survive MaterialDesk process death or APK replacement; independently
 running tmux sessions can be attached again.
 
 Android-shell terminals use the connected service's shell or root identity.
@@ -233,7 +247,7 @@ its documented external-command permission. Termux and tmux are optional;
 neither is required for the ordinary Console.
 
 Multiple Termux-backed windows are ordinary Android tasks, not tabs inside the
-Termux app or windows confined to an X11 server. MagicDesk cannot import an
+Termux app or windows confined to an X11 server. MaterialDesk cannot import an
 ordinary Termux tab's PTY.
 
 ![Independent Termux terminals running nvim and Midnight Commander](docs/images/magicdesk-termux-windows.png)
@@ -254,46 +268,46 @@ details and actions depend on the connected service's permissions.
 ## Linux Applications
 
 **Run Linux graphical applications beside Android apps, not just inside one
-large Linux desktop window.** MagicDesk embeds an X11 server and a Wayland
+large Linux desktop window.** MaterialDesk embeds an X11 server and a Wayland
 compositor, with common Android hosting and session controls. GIMP and the
 Termux version of Firefox can run simultaneously, each with its own window,
 taskbar entry and graphical session. Programs can come from native Termux
 packages, proot or a prepared chroot. Individual application mode does not need
 a guest desktop environment or a separate display-server APK.
 
-![GIMP and Termux Firefox in separate MagicDesk windows, with Task Manager showing their X11 sessions](docs/images/magicdesk-x11.png)
+![GIMP and Termux Firefox in separate MaterialDesk windows, with Task Manager showing their X11 sessions](docs/images/magicdesk-x11.png)
 
-*GIMP, the Linux build of Firefox and MagicDesk Task Manager running together
+*GIMP, the Linux build of Firefox and MaterialDesk Task Manager running together
 on one desktop. Both graphical applications are supplied by Termux.*
 
 ### Using Your Existing Desktop Mode
 
-**Keep your desktop shell and use MagicDesk for Linux applications and Termux
-terminals. No Shizuku, root or MagicDesk Desktop setup is needed for this path.**
+**Keep your desktop shell and use MaterialDesk for Linux applications and Termux
+terminals. No Shizuku, root or MaterialDesk Desktop setup is needed for this path.**
 
-In **Samsung DeX**, use MagicDesk's Linux applications and Termux terminals
-alongside Android apps, with DeX managing their windows. MagicDesk presents
+In **Samsung DeX**, use MaterialDesk's Linux applications and Termux terminals
+alongside Android apps, with DeX managing their windows. MaterialDesk presents
 these tools as ordinary Android windows, so the same approach can potentially
 work with Motorola Smart Connect's Mobile desktop or Android's desktop mode
 on supported Pixel devices.
 
-Open MagicDesk on that desktop's display, then choose **Apps** to open Start.
+Open MaterialDesk on that desktop's display, then choose **Apps** to open Start.
 After the [Termux setup](docs/getting-started.md), launch an installed graphical
 application or a Termux terminal with **Current** selected as the destination.
-There is no need to press **Start desktop**: MagicDesk supplies the tools while
+There is no need to press **Start desktop**: MaterialDesk supplies the tools while
 your existing shell manages the windows. A configured proot Linux environment
 can also supply individual applications or a whole Linux desktop inside one
 Android window.
 
-Using MagicDesk's own Desktop instead is a separate scenario: it requires
+Using MaterialDesk's own Desktop instead is a separate scenario: it requires
 Android 15+, Shizuku or root, Desktop setup and working framework windowing.
 
 ### Installed Apps In Start
 
-1. Enable Termux external commands and grant MagicDesk its `RUN_COMMAND`
+1. Enable Termux external commands and grant MaterialDesk its `RUN_COMMAND`
    permission, as described in [setup](docs/getting-started.md).
 2. Install `xkeyboard-config` and the graphical applications you want in Termux.
-3. Open **Start** and search for the application. MagicDesk reads Termux's
+3. Open **Start** and search for the application. MaterialDesk reads Termux's
    installed `.desktop` launchers whenever Start opens; no manual launcher is
    needed for applications that provide one.
 
@@ -340,8 +354,8 @@ In **New command app**, choose **Linux (Termux)** and an installed `proot-distro
 environment or a custom entry script for prepared chroot/other environments.
 Create a terminal, graphical application or Linux-desktop launcher, optionally choosing
 the Linux user and working directory. User shortcuts can be deleted from Start.
-Leave the terminal command empty for a Linux login shell in MagicDesk Console.
-MagicDesk supplies the display server and windows; Termux and your container setup
+Leave the terminal command empty for a Linux login shell in MaterialDesk Console.
+MaterialDesk supplies the display server and windows; Termux and your container setup
 supply the programs. It does not install or configure a Linux distribution for you.
 
 With authorized **Root** access, **Linux (Shell / root)** launchers can use a
@@ -364,10 +378,10 @@ See [Embedded X11](docs/x11.md), [Embedded Wayland](docs/wayland.md) and
 
 ### Linux Shell Components
 
-A graphical session can also contribute panels and backgrounds to a MagicDesk
+A graphical session can also contribute panels and backgrounds to a MaterialDesk
 Desktop instead of containing them inside a Linux desktop window. Select an
 active Desktop in **Linux graphics > Shell workspace**. Wayland layer-shell
-surfaces and X11 dock/desktop windows share MagicDesk's layout and reserved work
+surfaces and X11 dock/desktop windows share MaterialDesk's layout and reserved work
 area. Compatible Wayland panels can list and control managed Android and Linux
 tasks through foreign-toplevel management.
 
@@ -377,9 +391,9 @@ own panels inside their viewer. See [shell layout](docs/shell-layout.md).
 
 ## Shizuku Or Direct Root
 
-**Rooted devices can use MagicDesk without installing or running Shizuku.**
+**Rooted devices can use MaterialDesk without installing or running Shizuku.**
 Choose **Settings > Integrations > Privileged service > Root (su)**, reopen
-MagicDesk and authorize it in your root manager. The control panel shows
+MaterialDesk and authorize it in your root manager. The control panel shows
 **Access: shell / root / none** for the actual connected identity and provides
 the authorization entry point, even without Desktop.
 
@@ -397,19 +411,19 @@ integration** or **Managed Desktop** without changing installed apps or permissi
 Limits and backend changes apply after Exit and reopen, never halfway through a session. See
 [Privilege boundaries](docs/privilege-modes.md).
 
-## MagicDesk On A Computer With scrcpy
+## MaterialDesk On A Computer With scrcpy
 
-Use MagicDesk together with **scrcpy** to view and control the Android workspace
+Use MaterialDesk together with **scrcpy** to view and control the Android workspace
 from a computer. Desktop and applications execute on the Android device;
 scrcpy supplies the computer-side display and input connection. A physical
-monitor is not required: create a MagicDesk virtual display and view that
+monitor is not required: create a MaterialDesk virtual display and view that
 existing display with scrcpy.
 
 The same arrangement can show independent fullscreen Files or terminal tools
 without starting managed Desktop. scrcpy is a separate application with its
 own connection requirements; an MCP connection does not provide its video stream.
 
-Run on the computer, replacing `3` with the display ID shown in MagicDesk
+Run on the computer, replacing `3` with the display ID shown in MaterialDesk
 (`0` is the phone screen):
 
 ```sh
@@ -423,12 +437,12 @@ for installation and USB/Wi-Fi connection setup.
 
 ## Displays And Portable Workspaces
 
-Phone Control Panel lists built-in, wired, wireless and MagicDesk-created
+Phone Control Panel lists built-in, wired, wireless and MaterialDesk-created
 displays in one table, with their IDs, dimensions, Desktop state and Viewer
 connections. Select a row to act on that screen. Each display can have its own
 Desktop or simply host independent fullscreen apps; starting or closing one
 Desktop does not start or close the others. A wireless connection can already
-exist before MagicDesk starts Desktop on it.
+exist before MaterialDesk starts Desktop on it.
 
 **Create display** offers a virtual display or a display with a phone preview,
 with configurable dimensions and scale, initially based on the selected screen.
@@ -439,7 +453,7 @@ display keeps its own configuration when shown on another output.
 ### Portable Workspaces And Parking
 
 A **direct Desktop** lives on the Android display exposed by the monitor or
-wireless receiver. A **portable Desktop** lives on a MagicDesk virtual display;
+wireless receiver. A **portable Desktop** lives on a MaterialDesk virtual display;
 the monitor only shows it through a fullscreen Display Viewer. This separates
 the workspace from the cable: applications keep their Android display ID and
 stay on the same virtual screen when the output disconnects.
@@ -447,7 +461,7 @@ stay on the same virtual screen when the output disconnects.
 For example, keep GIMP, a browser and terminals open between monitors:
 
 1. Select the connected HDMI or wireless output and choose **Start portable
-   desktop here**. MagicDesk uses a suitable virtual display or creates one,
+   desktop here**. MaterialDesk uses a suitable virtual display or creates one,
    starts Desktop there, and shows it on the selected output.
 2. Open your applications on that virtual Desktop and work normally.
 3. Unplug the monitor, disconnect casting, or choose **Stop showing** on the
@@ -461,8 +475,8 @@ For example, keep GIMP, a browser and terminals open between monitors:
 
 Start with a portable Desktop for this workflow: unplugging a direct Desktop's
 physical screen does not convert it into a parked virtual one. Parking is a
-live session, not a saved machine image; keep MagicDesk running and do not use
-**Close desktop**, **Remove display** or **Exit MagicDesk** to park it.
+live session, not a saved machine image; keep MaterialDesk running and do not use
+**Close desktop**, **Remove display** or **Exit MaterialDesk** to park it.
 
 ### Viewing And Switching Screens
 
@@ -486,11 +500,11 @@ Ordinary Viewer opening is view-only and does not claim input routing.
 
 A viewer, display and Desktop session have independent lifetimes:
 
-- Closing a viewer does not close Desktop or remove MagicDesk's display.
+- Closing a viewer does not close Desktop or remove MaterialDesk's display.
 - **Close desktop** stops the session but keeps its display.
-- **Remove display** removes only a MagicDesk-owned display, after closing any
+- **Remove display** removes only a MaterialDesk-owned display, after closing any
   session on it and completing cleanup.
-- MagicDesk does not remove physical, wireless, built-in or foreign virtual
+- MaterialDesk does not remove physical, wireless, built-in or foreign virtual
   displays. Their connection is managed by Android and the external device.
 
 Display creation and ordinary tool placement do not require WMShell Desktop.
@@ -513,7 +527,7 @@ The optional MCP server exposes the same services used by the UI:
 - Rectangular screenshots and scoped Android UI inspection with element bounds,
   actions and waits, without requiring Desktop.
 - File upload/download with bounded chunks and integrity checks.
-- Same-package, same-signer MagicDesk APK updates, with an installer worker
+- Same-package, same-signer MaterialDesk APK updates, with an installer worker
   that survives replacement and allows the client to reconnect.
 - Desktop self-tests with exact run IDs, live stages, results and cleanup state.
 
@@ -527,7 +541,7 @@ does not need to reload its catalog merely because a grant was enabled.
 Android 16+ App Functions expose a smaller system-agent action surface.
 
 The built-in `magicdesk` CLI brings the same commands to shell scripts in
-MagicDesk Console and Termux Console. Its options and help come from the shared
+MaterialDesk Console and Termux Console. Its options and help come from the shared
 command catalog, and execution uses the same services as MCP. It works without
 Desktop, an enabled MCP server, Python, or an installed Termux app when using
 the ordinary Console.
@@ -547,16 +561,16 @@ transfer/update protocols and test control.
 
 ## Downloads
 
-**[Latest release](https://github.com/mekhontsev/magicdesk/releases/latest)**
+**[Latest release](https://github.com/y9hack337/MaterialDesk/releases/latest)**
 is the place to start for regular use. It contains the latest numbered official
 release, its APK and release notes. Read the notes to see what changed and which
 limitations apply; the rest of this README may also describe features still in
 development.
 
-**[Development APK](https://github.com/mekhontsev/magicdesk/releases/download/development/MagicDesk-development.apk)**
+**[Development APK](https://github.com/y9hack337/MaterialDesk/releases)**
 is the rolling build of `main`, published after its required CI checks pass.
 Use it to try unreleased features and fixes before the next numbered release.
-It uses the regular MagicDesk package and release signing certificate, not the
+It uses the regular MaterialDesk package and release signing certificate, not the
 separate MagicDeskTest identity, and may be less stable than a numbered release.
 Include its full version from Diagnostics when reporting a problem.
 
@@ -573,7 +587,7 @@ and the [API-level contract](docs/runtime-api-levels.md).
 | Control panel, Settings, MCP observation | Ordinary app access; explicitly enable MCP for clients |
 | Display inventory and interactive app launches | Ordinary app access; Android must allow the selected app on that display |
 | Files, Android shell, privileged capture and device actions | An authorized privileged service and the operation's actual capabilities |
-| Termux terminals | Termux, external commands enabled, MagicDesk's `RUN_COMMAND` permission |
+| Termux terminals | Termux, external commands enabled, MaterialDesk's `RUN_COMMAND` permission |
 | Linux graphical applications and desktops | Termux integration with `xkeyboard-config`, or authorized root with a prepared chroot/entry script and XKB data; no standalone Termux:X11 APK |
 | Owned virtual displays | An authorized privileged service and working framework display APIs |
 | Managed Desktop | Android 15+, an authorized privileged service, Desktop setup, working framework windowing |
@@ -587,9 +601,9 @@ or Linux graphics without Termux. Enable both integrations to combine them. Mana
 Desktop adds window management on Android 15+; it is not a prerequisite for
 the independent tools. Android 14 device coverage remains pending.
 
-1. Install MagicDesk and open Phone Control Panel.
-2. For privileged features, start Shizuku and authorize MagicDesk, or select
-   **Root (su)** in **Settings > Integrations**, reopen MagicDesk and approve the
+1. Install MaterialDesk and open Phone Control Panel.
+2. For privileged features, start Shizuku and authorize MaterialDesk, or select
+   **Root (su)** in **Settings > Integrations**, reopen MaterialDesk and approve the
    root request. Termux is optional and has its own permission setup.
 3. Use **Apps** for Files and other applications. Its **Terminal sessions** entry
    creates or opens Android-shell, Termux and tmux terminals without Desktop.
@@ -614,14 +628,14 @@ selects where phone-attached mice and keyboards operate independently.
 session. **Close desktop** closes only that workspace while keeping other
 Desktops, the tools runtime and owned displays available. Its applications remain
 on that display as independent fullscreen tasks; if the display disappears, they
-return to the phone. **Exit MagicDesk** also ends retained terminals and graphical
+return to the phone. **Exit MaterialDesk** also ends retained terminals and graphical
 sessions, releases owned displays, closes built-in windows and stops the
 runtime. Neither action deletes the Desktop folder.
 
 **[Getting started](docs/getting-started.md)** is the step-by-step guide from
 installation to your first workspace. It explains Shizuku authorization,
 independent Files and terminal tools, Termux permissions, display creation and
-Desktop setup, as well as closing, updating and removing MagicDesk. Use it when
+Desktop setup, as well as closing, updating and removing MaterialDesk. Use it when
 you need the actual setup sequence rather than the feature overview here.
 [Compatibility](docs/compatibility.md) separates standard support, device
 observations and optional vendor controls.
@@ -630,13 +644,43 @@ observations and optional vendor controls.
 
 Physical mice and keyboards stay Android input devices, explicitly associated
 with the selected input display, with or without Desktop. Android handles
-acceleration, layout, repeat, hover and right click. MagicDesk's key-only Accessibility service handles
+acceleration, layout, repeat, hover and right click. MaterialDesk's key-only Accessibility service handles
 desktop shortcuts only during the session.
 
 The optional phone touchpad supplies one virtual relative mouse. The user's
-normal Android IME connects directly to a focused external editor; MagicDesk
+normal Android IME connects directly to a focused external editor; MaterialDesk
 does not capture editor text, choose a replacement IME or relay it through a
 vendor text bridge.
+
+The touchpad follows Windows precision-touchpad gestures:
+
+| Gesture | Action |
+| --- | --- |
+| Tap / two-finger tap | Left click / right click |
+| Double-tap and hold, then move | Drag (long press then move also drags) |
+| Two-finger slide | Scroll vertically or horizontally |
+| Two-finger pinch | Zoom at the cursor (sent to the app as a real touch pinch) |
+| Quick two-finger flick right / left | Back / Forward |
+| Press and hold, then move | Hold the left button (long press, text selection, drag) |
+| Three-finger swipe up / down | Task view / show desktop |
+| Three-finger swipe left or right | Switch apps; keep the fingers down to move through Alt+Tab |
+| Three-finger / four-finger tap | Start / notifications |
+
+The whole panel is touch surface; there are no on-screen mouse buttons.
+**Settings > Phone touchpad** inverts scrolling (content follows the fingers)
+and turns the Back/Forward flick on or off.
+Right click is only a two-finger tap, so a resting finger never opens a
+context menu. Desktop gestures require an active
+Desktop on the selected display. To guard against accidental exits, the
+touchpad hides the system bars (an edge swipe first reveals them), keeps the
+screen awake, and closes only after holding its close button or pressing Back
+twice.
+
+To save battery and protect OLED screens from burn-in, the touchpad is pure
+black with outlined controls. After 8 seconds without a touch its controls dim
+and the backlight drops to minimum; touching anywhere restores them. The whole
+layout also shifts by a few pixels every minute, and the centered gesture guide
+disappears after the first touch.
 
 **Show keyboard on app display**, available in Settings and the taskbar's
 context menu, requests the on-screen keyboard beside the app instead of on the
@@ -650,6 +694,33 @@ Unsupported optional features do not disable unrelated tools or Desktop.
 Shared compatibility policies can be selected in Settings on every vendor.
 
 ## Keyboard Shortcuts
+
+Two-finger touchpad scrolling uses high-resolution wheel steps and continues
+with momentum after a quick flick; touching the pad again stops it.
+
+Drag across empty desktop space to select several icons with a selection
+rectangle; hold Ctrl to add to the selection, or press Ctrl+A to select all.
+Copy, cut, open and delete then apply to every selected item.
+
+Files drag between the desktop, Files windows and other applications. A mouse
+or the phone touchpad drags as soon as the pointer moves with the button held;
+on a touchscreen, long-press first. Applications that do not accept dropped
+files can still receive them: drop the files on the application's taskbar icon
+to send them through its share target (for example, Telegram's chat picker).
+
+The taskbar camera button (or **Win + Shift + S**) takes an area screenshot:
+the screen freezes, drag to select an area, or press **Full screen** in the
+toolbar (or Enter) for the whole screen. The image is saved to
+Pictures/Screenshots and copied to the clipboard.
+
+**Quick controls > Android Quick Settings** lists the application tiles added
+to the phone's own Quick Settings, such as a VPN toggle, and presses them for
+you. System tiles such as Wi-Fi have no application component; **Open Quick
+Settings on phone** opens Android's own panel for them.
+
+Windows shortcuts also include **Win + E** (Files), **Win + Tab** (Task view),
+**Win + S** (search in Start), **Win + R** (Console) and **Ctrl + Shift + Esc**
+(Task Manager).
 
 These actions also have pointer controls. Right-click an application's taskbar
 icon for **Window > Arrange** (halves and quarters) or **Restore window**.
@@ -671,7 +742,7 @@ indicator offers hardware layouts separately from on-screen keyboards.
 | `Win+Backspace` | Send Android Back to the desktop display |
 | `Win+L` | Lock phone |
 | `Win+N` / `Win+Q` | Notifications / Quick controls |
-| `Win+I` | MagicDesk Settings |
+| `Win+I` | MaterialDesk Settings |
 | `Win+Print Screen` | Capture desktop |
 | `Win+Shift+Print Screen` | Start/stop recording |
 | `Ctrl+Space` | Next configured physical-keyboard layout |
@@ -689,7 +760,7 @@ Root users can select **Root (su)** in **Settings > Integrations** instead of
 running Shizuku. **Limits > Maximum access > Shell** also restricts root-backed
 Shizuku; **App only** disables privileged startup entirely. Settings take effect
 on the next app start. This limits the working service, not the app's root-manager grant.
-MagicDesk does not patch SystemUI or load a kernel module.
+MaterialDesk does not patch SystemUI or load a kernel module.
 
 MCP is disabled by default and requires a bearer token. Each listener has
 independent permissions for control, input/tests, content, file reads, file
@@ -706,15 +777,15 @@ See [Privilege boundaries](docs/privilege-modes.md) and
 
 ## Community And Support
 
-**[r/MagicDesk](https://www.reddit.com/r/MagicDesk/)** is the public subreddit
-for MagicDesk discussions, announcements and user setups. Share your workspace,
+**[r/MaterialDesk](https://www.reddit.com/r/MaterialDesk/)** is the public subreddit
+for MaterialDesk discussions, announcements and user setups. Share your workspace,
 compare experiences across devices, ask questions or propose improvements.
 Each topic has its own discussion thread, so other users can find and build on
 the same conversation.
 
 **[Telegram community](https://t.me/magicdesk_android)** is the shared place
 for release announcements, questions, device experiences and workflow ideas.
-Use it to discuss how you use MagicDesk and what you would like to improve.
+Use it to discuss how you use MaterialDesk and what you would like to improve.
 The support bot below is a separate private conversation for a specific report
 and its follow-up questions; posting on Reddit or in the Telegram community
 does not submit a bot case.
@@ -722,7 +793,7 @@ does not submit a bot case.
 ### AI-Assisted Support
 
 **Report a problem and try a proposed fix from the same Telegram chat.**
-[MagicDesk Support Bot](https://t.me/MagicDeskSupportBot) connects your
+[MaterialDesk Support Bot](https://t.me/MagicDeskSupportBot) connects your
 diagnostics to an AI-assisted development loop: GitHub Copilot can investigate
 the report, ask follow-up questions and propose code changes. When a candidate
 build succeeds, the bot sends you a **MagicDeskTest APK** to try. Send the
@@ -747,7 +818,7 @@ can contain report details: **do not send secrets or personal files**.
 
 The service is experimental and processing capacity is limited. Test APKs use
 a separate package and signing key; they are not official releases or verified
-fixes. Installation is manual; merging a patch into MagicDesk requires
+fixes. Installation is manual; merging a patch into MaterialDesk requires
 maintainer review. Do not run regular and test Desktop sessions together.
 See [Telegram support](docs/telegram-support.md) for the steps, privacy and
 testing precautions. [GitHub issues](https://github.com/mekhontsev/magicdesk/issues)
@@ -775,7 +846,7 @@ Host builds do not replace device testing. Native helpers are currently ARM64;
 API 34 native validation and other ABIs remain in the
 [validation plan](docs/testing-backlog.md).
 
-> **Development note:** MagicDesk is a vibe-coded project, built primarily through
+> **Development note:** MaterialDesk is a vibe-coded project, built primarily through
 > [iterative AI-assisted development](docs/ai-assisted-device-porting.md)
 > and hands-on device testing. Independent review is especially important for
 > privileged framework integration.
@@ -803,7 +874,7 @@ API 34 native validation and other ABIs remain in the
 ## Project
 
 - Author: [Dmitry Mekhontsev](https://github.com/mekhontsev)
-- Community: [Reddit](https://www.reddit.com/r/MagicDesk/) and
+- Community: [Reddit](https://www.reddit.com/r/MaterialDesk/) and
   [Telegram](https://t.me/magicdesk_android)
 - Package: `io.github.mekhontsev.magicdesk`
 - Minimum APK SDK: 34; managed Desktop: 35

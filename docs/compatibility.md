@@ -10,7 +10,7 @@ IME policy, HOME, displays, files and automation. Vendor extensions are not
 required for that architecture, and their presence is not proof of a working
 device. Actual release/firmware coverage must be evaluated per subsystem.
 
-MagicDesk's managed Desktop targets capable Android 15+ firmware through one APK and one common
+MaterialDesk's managed Desktop targets capable Android 15+ firmware through one APK and one common
 desktop runtime. The standard Android driver supports phone, simulated, and
 already connected secondary-display sessions. A platform-driver boundary
 separates that baseline from optional Nubia/REDMAGIC integration. A device
@@ -46,7 +46,7 @@ Restore defaults removes the overrides.
 Android value and changes it only with shell access and no desktop session.
 Opening Settings or preparing the device does not enable it. Reconnecting the
 external display can apply the change; some firmware may require a restart.
-This advisory does not block MagicDesk startup. Diagnostics reports informational state,
+This advisory does not block MaterialDesk startup. Diagnostics reports informational state,
 not a required capability. The setting can add system navigation bars to
 secondary displays and does not guarantee physical-input routing. It survives
 Close Desktop; Restore defaults removes this override too.
@@ -113,7 +113,7 @@ cursor. A position query without a display identity is reported separately as
 an unscoped observation, never as a confirmed position on the desktop.
 
 Phone desktop availability is independent from external-display support.
-MagicDesk reports Android's live
+MaterialDesk reports Android's live
 `config_canInternalDisplayHostDesktops` framework resource in Diagnostics, but
 does not reject a local session from this value alone. A false value can disable
 the framework's standard display-0 desktop path on some ROMs, while vendor or
@@ -130,7 +130,7 @@ source of truth; simulated and secondary-display support is unaffected.
   It is known compatible, but has not received the complete maintainer test
   matrix.
 - **Compatible baseline, unverified** means an Android 15+ platform driver can
-  provide the selected session type. MagicDesk allows startup, probes
+  provide the selected session type. MaterialDesk allows startup, probes
   capabilities, and reports unavailable features individually. On the
   standard Android profile, external sessions use a secondary display that is
   already connected and reported by Android. A wireless connection button is
@@ -150,19 +150,19 @@ change without an Android API-level change.
 
 Android 15 is the managed-Desktop compatibility baseline, not by itself a verified
 firmware profile. Its WMShell uses the older `desktopmode moveToDesktop`
-command when that backend is enabled; MagicDesk detects either command name
+command when that backend is enabled; MaterialDesk detects either command name
 and retains its direct transaction fallback. Its older window-container API is
 handled by the central framework compatibility adapter. Frameworks without
 application-requested visible inset types in `TaskInfo` report that specific
 immersive-state observation as unavailable while the task
 observer continues to provide lifecycle, focus, visibility, mode, and bounds.
-MagicDesk does not infer a negative immersive request from that absence, so an
+MaterialDesk does not infer a negative immersive request from that absence, so an
 activity-mode guard will not override ambiguous application fullscreen. ROMs
 that backport the field can use it on Android 15, but only if the framework also
 enables publication of client requests. A declared field filled with the default
 visible types is not evidence that the application declined immersive mode.
 Diagnostics distinguishes an absent field, disabled publication, and an
-unavailable feature-flag probe. Explicit MagicDesk fullscreen commands do not
+unavailable feature-flag probe. Explicit MaterialDesk fullscreen commands do not
 depend on this observation.
 Diagnostics reports the selected framework profile, immersive observation,
 caption strategy, and InsetsSource signature separately from the vendor
@@ -207,7 +207,7 @@ in-APK catalog recognition must not use its reused stock fingerprint alone.
   its password shield from repeatedly stealing focus. The vendor connection UI
   is unavailable during protection; Close Desktop restores it. Saved privacy
   preferences are unchanged. The toggle is under **Compatibility (next session)**
-  only on Nubia. After a process crash, restoration requires reopening MagicDesk
+  only on Nubia. After a process crash, restoration requires reopening MaterialDesk
   with privileged access. Other vendor casting protocols are not verified.
 
 - **Background UI while securely locked** is opt-in for owned virtual displays.
@@ -224,7 +224,7 @@ in-APK catalog recognition must not use its reused stock fingerprint alone.
   HDCP compatibility or playback on a particular receiver. Protected Viewer
   surfaces may be black in screenshots and recordings. `TRUSTED` and `SECURE`
   are independent Android properties.
-- A display without Android's `TRUSTED` flag cannot directly host MagicDesk's
+- A display without Android's `TRUSTED` flag cannot directly host MaterialDesk's
   organizer task areas. On public external outputs, **Start desktop** therefore
   uses a trusted portable workspace automatically, if Android allows the Viewer
   Activity. **Start portable desktop here** also offers this path on trusted
@@ -245,13 +245,13 @@ in-APK catalog recognition must not use its reused stock fingerprint alone.
   disabled because it caused content/caption overlap after reopening Desktop.
   The existing caption repair for transitions within an active Desktop is separate.
 - WMShell's native close control can remove a Linux application's Android host directly, without
-  a cancellable Activity callback. MagicDesk reopens a surviving client on its
+  a cancellable Activity callback. MaterialDesk reopens a surviving client on its
   verified destination, so a save dialog remains accessible; the Android task ID
-  changes and the window may briefly disappear. MagicDesk Close/Alt+F4/MCP requests
+  changes and the window may briefly disappear. MaterialDesk Close/Alt+F4/MCP requests
   retain the original host; see [X11 applications](x11.md#applications) and
   [Wayland host ownership](wayland.md#boundaries).
 - Custom-caption mouse handling depends on WMShell preserving the application's
-  display-specific gesture-exclusion regions. MagicDesk does not replace
+  display-specific gesture-exclusion regions. MaterialDesk does not replace
   native captions or replay intercepted clicks.
 - Abrupt display removal can leave framework transition-performance state.
   Cleanup detects new residue; it cannot safely repair an orphaned system
@@ -283,7 +283,7 @@ screen.
 
 ## Error behavior
 
-Failures that can be isolated should not terminate the desktop. MagicDesk keeps
+Failures that can be isolated should not terminate the desktop. MaterialDesk keeps
 the rest of the UI running, shows a short user-facing message with a stable
 error code such as `[SHELL-CONSOLE-002]`, and records technical context for the
 diagnostics report. A bounded set of recent error signatures suppresses
@@ -296,7 +296,7 @@ checks** but are not appended to the event history. Audits are read-only; the
 event history is reserved for failed user or runtime operations.
 
 Fatal uncaught exceptions are stored as `[CRASH-001]` before Android terminates
-the process. Open Diagnostics after restarting MagicDesk to include that crash
+the process. Open Diagnostics after restarting MaterialDesk to include that crash
 in the next report.
 
 ## Creating a report
@@ -313,7 +313,7 @@ in the next report.
 
 The report includes:
 
-- MagicDesk version and Android build fingerprint;
+- MaterialDesk version and Android build fingerprint;
 - manufacturer, model, API level, security patch, and supported ABIs;
 - selected privilege backend, active/configured runtime limits, actual service
   UID, and required desktop-windowing values;
@@ -324,23 +324,23 @@ The report includes:
   projection, input, hardware, launcher, and output-mode integrations;
 - notification-listener and WMShell desktopmode probes;
 - current displays and external input-device descriptors;
-- a one-shot input snapshot with aggregate virtual-pointer activity, MagicDesk
+- a one-shot input snapshot with aggregate virtual-pointer activity, MaterialDesk
   virtual-device presence, current routing associations, and observed pointer
   position;
 - a read-only vendor cooling-settings snapshot that distinguishes the selected
   system-controls provider, discovered fan/pump control keys, and readable
   effective state without changing cooling policy;
-- bounded structured MagicDesk error events;
+- bounded structured MaterialDesk error events;
 - failed secondary HOME launch evidence under `DESKTOP-LAUNCH-002`: launch
   stage, process/Binder caller UID, Android start result, requested display,
   returned task/type and a bounded pre-cleanup task sample across displays;
-- recent logcat entries from MagicDesk tags only;
+- recent logcat entries from MaterialDesk tags only;
 - a schema-versioned JSON summary with platform composition, per-component
   providers, typed capability observations, window-transition routing, and the
   manual compatibility checklist.
 
 The report excludes notification title/body text, user files, account data,
-clipboard contents, and the installed-app list. MagicDesk-only logs can still
+clipboard contents, and the installed-app list. MaterialDesk-only logs can still
 contain package names, task ids, display ids, and filenames involved in a
 failed operation. Review the text before publishing it.
 
@@ -388,7 +388,7 @@ through the baseline. Display drivers remain independent, so vendor support is
 not multiplied into phone/wired/wireless/simulated driver combinations.
 
 `raw_input.write` reports whether an event node can be opened with `O_RDWR`.
-This is diagnostic permission evidence only. MagicDesk routes physical devices
+This is diagnostic permission evidence only. MaterialDesk routes physical devices
 through Android; it does not open or write their event nodes.
 
 After required Desktop setup and any requested reboot, the report should show
@@ -405,7 +405,7 @@ setup operation still blocks Desktop, not independent tools.
 
 On some Nubia firmware, Android keeps notification-listener access enabled
 after an app process or package restart but does not bind the service again.
-MagicDesk first requests a rebind through the public Android API. If the
+MaterialDesk first requests a rebind through the public Android API. If the
 listener is still disconnected two seconds later, it performs a public
 `requestUnbind(ComponentName)` / `requestRebind(ComponentName)` cycle. The
 cycle preserves the user's notification-access grant while forcing Android to
@@ -417,7 +417,7 @@ recovery is reported as `[NOTIFICATIONS-005]`.
 Use one issue per reproducible failure. Do not combine an input-routing problem
 with an unrelated window-decoration or XR-resolution problem. Include whether
 the same operation works in the device's stock desktop or projection UI; that
-distinguishes a MagicDesk integration failure from a firmware limitation.
+distinguishes a MaterialDesk integration failure from a firmware limitation.
 
 For a display issue, include the monitor/glasses model, selected **Output
 mode** when that control is available, and whether
@@ -426,11 +426,11 @@ include the keyboard or
 pointing-device model. For a window issue, include the affected Android package
 and whether the task was windowed, maximized, snapped, or true fullscreen.
 
-If the vendor HDMI-mode node is unavailable to shell UID 2000, MagicDesk tries
+If the vendor HDMI-mode node is unavailable to shell UID 2000, MaterialDesk tries
 the selected SoC display backend before falling back to Android's public mode
 list. When neither source exposes alternate timings, the current physical mode
 is read-only and timing selection remains with the system projection UI. This
 does not disable the desktop.
-Desktop wallpaper comes from the bundled MagicDesk artwork or a user-selected
+Desktop wallpaper comes from the bundled MaterialDesk artwork or a user-selected
 image. An unreadable custom image falls back to its last valid cache or the
 bundled background without failing the desktop session.

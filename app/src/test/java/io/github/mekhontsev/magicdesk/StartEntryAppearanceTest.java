@@ -8,12 +8,17 @@ public final class StartEntryAppearanceTest {
         RuntimeSourceFixture.verify("""
                 static class android {
                     static class R { static class attr {
-                        static final int state_selected = 1, state_focused = 2, state_pressed = 3;
+                        static final int state_selected = 1, state_focused = 2, state_pressed = 3,
+                                state_hovered = 4;
                     } }
                 }
+                static class Color { static final int TRANSPARENT = 0; }
                 record Background(int fill, int radius, int border) { }
                 static class DesktopUiFactory {
-                    static final int COLOR_PANEL_ALT = 10, COLOR_PANEL_FOCUS = 11, COLOR_AMBER = 12;
+                    static final int COLOR_SECONDARY_CONTAINER = 10, COLOR_TEXT = 11, COLOR_ACCENT = 12;
+                    static int withAlpha(int color, float alpha) {
+                        return color * 100 + Math.round(alpha * 100);
+                    }
                     Background rounded(int fill, int radius, int border) {
                         return new Background(fill, radius, border);
                     }
@@ -29,12 +34,14 @@ public final class StartEntryAppearanceTest {
                 public static void verify() {
                     for (int radius : new int[] {7, 12}) {
                         var states = new Fixture().entryBackground(radius).states;
-                        check(states.size() == 4, "missing interactive state");
+                        check(states.size() == 5, "missing interactive state");
                         for (int state : new int[] {1, 2}) {
-                            check(states.get(state).border() == DesktopUiFactory.COLOR_AMBER,
+                            check(states.get(state).border() == DesktopUiFactory.COLOR_ACCENT,
                                     "selection or focus lost its outline");
                         }
-                        for (int state : new int[] {0, 3}) {
+                        check(states.get(0).fill() == Color.TRANSPARENT,
+                                "ordinary entry draws a tile box");
+                        for (int state : new int[] {0, 3, 4}) {
                             check(states.get(state).border() == states.get(state).fill(),
                                     "ordinary or pressed entry has a permanent outline");
                         }
@@ -49,7 +56,7 @@ public final class StartEntryAppearanceTest {
         final String tile = RuntimeSourceFixture.methods("StartMenuContent", "createAppTile");
         assertTrue(tile.contains("tile.setBackground(entryBackground(12))"));
         assertFalse(tile.contains("canFloat"));
-        assertFalse(tile.contains("COLOR_CYAN"));
+        assertFalse(tile.contains("COLOR_ACCENT"));
         final String row = RuntimeSourceFixture.methods("StartMenuContent", "createSearchRow");
         assertTrue(row.contains("row.setBackground(entryBackground(7))"));
         assertTrue(row.contains("row.setSelected(selected)"));

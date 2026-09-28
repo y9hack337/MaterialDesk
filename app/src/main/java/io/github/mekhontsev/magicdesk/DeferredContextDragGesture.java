@@ -32,6 +32,7 @@ final class DeferredContextDragGesture
     private boolean mDragging;
     private boolean mContextMenuPending;
     private boolean mPrimaryGesture;
+    private boolean mMouseGesture;
 
     DeferredContextDragGesture(
             final View target,
@@ -52,6 +53,9 @@ final class DeferredContextDragGesture
     public boolean onLongClick(final View view) {
         mLongPressRecognized = true;
         mContextMenuPending = mContextMenuEnabled;
+        // After a touch long press, movement drags the item; a scrolling
+        // parent must not take the gesture over.
+        disallowParentIntercept(view);
         return true;
     }
 
@@ -64,13 +68,20 @@ final class DeferredContextDragGesture
             mDownX = event.getX();
             mDownY = event.getY();
             reset();
-            mPrimaryGesture = !event.isFromSource(InputDevice.SOURCE_MOUSE)
+            mMouseGesture = event.isFromSource(InputDevice.SOURCE_MOUSE);
+            mPrimaryGesture = !mMouseGesture
                     || (event.getButtonState()
                             & MotionEvent.BUTTON_PRIMARY) != 0;
+            if (mMouseGesture && mPrimaryGesture) {
+                // A mouse press-and-move drags, as on desktop systems; lists
+                // scroll with the wheel instead of stealing the drag.
+                disallowParentIntercept(target);
+            }
         } else if (action == MotionEvent.ACTION_MOVE
                 && !mDragging
                 && movedPastSlop(event)
-                && (!mRequireLongPressForDrag || mLongPressRecognized)) {
+                && (!mRequireLongPressForDrag || mLongPressRecognized
+                        || (mMouseGesture && mPrimaryGesture))) {
             target.cancelLongPress();
             mContextMenuPending = false;
             mDragging = mListener.onStartDrag(target, event);
@@ -96,6 +107,12 @@ final class DeferredContextDragGesture
         return false;
     }
 
+    private static void disallowParentIntercept(final View view) {
+        if (view.getParent() != null) {
+            view.getParent().requestDisallowInterceptTouchEvent(true);
+        }
+    }
+
     private boolean movedPastSlop(final MotionEvent event) {
         return Math.abs(event.getX() - mDownX) > mTouchSlop
                 || Math.abs(event.getY() - mDownY) > mTouchSlop;
@@ -106,5 +123,6 @@ final class DeferredContextDragGesture
         mDragging = false;
         mContextMenuPending = false;
         mPrimaryGesture = false;
+        mMouseGesture = false;
     }
 }

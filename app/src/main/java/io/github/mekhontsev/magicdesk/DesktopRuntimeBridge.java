@@ -290,6 +290,10 @@ public final class DesktopRuntimeBridge {
         return UI.toggleShortcutHelp(displayId);
     }
 
+    static boolean toggleTaskOverview(final int displayId) {
+        return UI.toggleTaskOverview(displayId);
+    }
+
     static boolean toggleNotificationCenter(final int displayId) {
         return UI.toggleNotificationCenter(displayId);
     }

@@ -67,7 +67,8 @@ public final class DesktopTaskbarRevealControllerTest {
                     }
                 }
                 """ + RuntimeSourceFixture.methods("DesktopTaskbarRevealController",
-                        "reveal", "currentPresentation", "isExplicitlyRevealed", "resolvePresentation"));
+                        "reveal", "currentPresentation", "pointerEdgeOverIndependentTask",
+                        "isExplicitlyRevealed", "resolvePresentation"));
     }
 
     @Test
@@ -90,6 +91,36 @@ public final class DesktopTaskbarRevealControllerTest {
                     false, (flags & 1) != 0, (flags & 2) != 0,
                     (flags & 4) != 0, (flags & 8) != 0, true));
         }
+    }
+
+    @Test
+    public void externalPointerEdgeStaysReachableOverIndependentFullscreen() throws Exception {
+        RuntimeSourceFixture.verify("""
+                enum Presentation { UNAVAILABLE, EDGE, VISIBLE }
+                boolean mAvailable, mTouchEdgeEnabled, mPolicyVisible, mAutoHide,
+                        mAutomaticHold, mInteractionHold;
+                static class RevealState {
+                    boolean revealed;
+                    boolean isRevealed() { return revealed; }
+                }
+                RevealState mPointerState = new RevealState(), mTouchState = new RevealState();
+                public static void verify() {
+                    Fixture f = new Fixture();
+                    f.mAvailable = false;
+                    check(f.currentPresentation() == Presentation.EDGE, "external edge hidden");
+                    f.mPointerState.revealed = true;
+                    check(f.currentPresentation() == Presentation.VISIBLE, "pointer reveal ignored");
+                    f.mTouchEdgeEnabled = true;
+                    check(f.currentPresentation() == Presentation.UNAVAILABLE,
+                            "phone touch edge kept over another application");
+                    f.mTouchEdgeEnabled = false;
+                    f.mAvailable = true;
+                    f.mPointerState.revealed = false;
+                    check(f.currentPresentation() == Presentation.EDGE, "managed fullscreen changed");
+                }
+                """ + RuntimeSourceFixture.methods("DesktopTaskbarRevealController",
+                        "currentPresentation", "pointerEdgeOverIndependentTask",
+                        "isExplicitlyRevealed", "resolvePresentation"));
     }
 
     @Test
@@ -197,6 +228,7 @@ public final class DesktopTaskbarRevealControllerTest {
                 }
                 """ + RuntimeSourceFixture.methods("DesktopTaskbarRevealController",
                         "setAvailable", "setVisibilityHolds", "updateArmedState",
-                        "currentPresentation", "isExplicitlyRevealed", "resolvePresentation"));
+                        "currentPresentation", "pointerEdgeOverIndependentTask",
+                        "isExplicitlyRevealed", "resolvePresentation"));
     }
 }

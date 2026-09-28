@@ -48,6 +48,7 @@ public final class ShellCommandService extends IShellCommandService.Stub {
     private final ShellVirtualDisplays mVirtualDisplays;
     private final ShellUiAutomation mUiAutomation;
     private final ShellBackgroundWork mBackgroundWork;
+    private final TouchpadPinchInjector mPinch;
     private final Object mInputRoutingLock = new Object();
     private DisplayInputRoutingSession mInputRoutingSession;
     private IBinder mInputRoutingOwner;
@@ -67,6 +68,7 @@ public final class ShellCommandService extends IShellCommandService.Stub {
         mFileSystem = new ShellFileSystem();
         mVirtualDisplays = new ShellVirtualDisplays(context);
         mUiAutomation = new ShellUiAutomation(context);
+        mPinch = new TouchpadPinchInjector(context);
         mBackgroundWork = new ShellBackgroundWork(context, mVirtualDisplays, platform.backgroundWork());
         Log.i(TAG, "command service started uid=" + Os.getuid());
     }
@@ -1030,6 +1032,19 @@ public final class ShellCommandService extends IShellCommandService.Stub {
     }
 
     @Override
+    public boolean injectTouchpadPinch(
+            final int displayId,
+            final int phase,
+            final float scale) {
+        try {
+            return mPinch.handle(displayId, phase, scale);
+        } catch (ReflectiveOperationException | RuntimeException error) {
+            Log.e(TAG, "touchpad pinch injection failed", error);
+            return false;
+        }
+    }
+
+    @Override
     public boolean injectPointerClickAt(
             final int displayId,
             final int x,
@@ -1586,6 +1601,7 @@ public final class ShellCommandService extends IShellCommandService.Stub {
 
     @Override
     public void destroy() {
+        mPinch.close();
         mBackgroundWork.close();
         mUiAutomation.close();
         mVirtualDisplays.close();

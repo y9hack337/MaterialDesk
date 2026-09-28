@@ -67,7 +67,7 @@ final class TaskbarOverflowController {
         button.setBackground(mUi.interactiveRounded(
                 DesktopUiFactory.COLOR_PANEL_ALT,
                 desktopDp(10, 8),
-                DesktopUiFactory.COLOR_CYAN));
+                DesktopUiFactory.COLOR_ACCENT));
         button.setClickable(true);
         button.setFocusable(true);
 
@@ -133,7 +133,7 @@ final class TaskbarOverflowController {
         if (panels == null || mItems.isEmpty()) {
             return;
         }
-        if (panels.isRequested(mPanel)) {
+        if (panels.isShowing(mPanel)) {
             panels.hide(mPanel);
             return;
         }
@@ -181,10 +181,7 @@ final class TaskbarOverflowController {
         mList.setPadding(dp(6), dp(6), dp(6), dp(6));
         mPanel = new ScrollView(mActivity);
         mPanel.setFillViewport(true);
-        mPanel.setBackground(mUi.rounded(
-                DesktopUiFactory.COLOR_PANEL,
-                desktopDp(8, 6),
-                DesktopUiFactory.COLOR_CYAN));
+        mPanel.setBackground(mUi.menuSurface());
         mPanel.setClickable(true);
         mPanel.addView(mList, new ScrollView.LayoutParams(
                 ScrollView.LayoutParams.MATCH_PARENT,

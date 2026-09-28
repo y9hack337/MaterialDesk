@@ -16,7 +16,7 @@ final class ConsoleTerminalWindow {
     private static final int COLOR_BACKGROUND = 0xFF090D14;
     private static final int COLOR_TEXT = 0xFFE5E7EB;
     private static final int COLOR_MUTED = 0xFF94A3B8;
-    private static final int COLOR_CYAN = 0xFF22D3EE;
+    private static final int COLOR_ACCENT = 0xFF22D3EE;
     private static final int COLOR_AMBER = 0xFFF59E0B;
 
     private final Activity mActivity;
@@ -196,7 +196,7 @@ final class ConsoleTerminalWindow {
         mProgress.setIndeterminate(data.progressState() == 3 || data.progressPercent() < 0);
         if (data.progressPercent() >= 0) { mProgress.setProgress(data.progressPercent()); }
         final int color = data.progressState() == 2 ? 0xFFEF4444
-                : data.progressState() == 4 ? COLOR_AMBER : COLOR_CYAN;
+                : data.progressState() == 4 ? COLOR_AMBER : COLOR_ACCENT;
         mProgress.setProgressTintList(ColorStateList.valueOf(color));
         mProgress.setIndeterminateTintList(ColorStateList.valueOf(color));
         mProgress.setContentDescription(mActivity.getString(R.string.console_progress, data.progressState(), data.progressPercent()));

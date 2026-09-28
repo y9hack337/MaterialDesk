@@ -133,7 +133,7 @@ final class DesktopControlsController {
         if (externalDesktop) {
             mPhoneScreenAction = mUi.actionButton(
                     R.string.action_phone_screen_off,
-                    DesktopUiFactory.COLOR_CYAN);
+                    DesktopUiFactory.COLOR_ACCENT);
             mPhoneScreenAction.setOnClickListener(view ->
                     togglePhoneScreen());
             addActionButton(actionGrid, mPhoneScreenAction);
@@ -141,7 +141,7 @@ final class DesktopControlsController {
 
         final Button closeDesktop = mUi.actionButton(
                 R.string.action_close_desktop,
-                DesktopUiFactory.COLOR_CYAN);
+                DesktopUiFactory.COLOR_ACCENT);
         closeDesktop.setOnClickListener(view ->
                 mActivity.closeDesktop());
         addActionButton(actionGrid, closeDesktop);
@@ -149,7 +149,7 @@ final class DesktopControlsController {
         if (externalDesktop) {
             mTouchpadAction = mUi.actionButton(
                     R.string.action_open_touchpad,
-                    DesktopUiFactory.COLOR_CYAN);
+                    DesktopUiFactory.COLOR_ACCENT);
             mTouchpadAction.setOnClickListener(view -> {
                 mActivity.hideAllPanels();
                 DesktopOperations.openTouchpad();
@@ -159,28 +159,28 @@ final class DesktopControlsController {
 
         final Button deviceSetup = mUi.actionButton(
                 R.string.action_device_setup,
-                DesktopUiFactory.COLOR_CYAN);
+                DesktopUiFactory.COLOR_ACCENT);
         deviceSetup.setOnClickListener(view ->
                 mActivity.openDeviceSetup());
         addActionButton(actionGrid, deviceSetup);
 
         final Button controlPanel = mUi.actionButton(
                 R.string.action_open_control_panel,
-                DesktopUiFactory.COLOR_CYAN);
+                DesktopUiFactory.COLOR_ACCENT);
         controlPanel.setOnClickListener(view ->
                 mActivity.openControlPanel());
         addActionButton(actionGrid, controlPanel);
 
         final Button diagnostics = mUi.actionButton(
                 R.string.action_diagnostics,
-                DesktopUiFactory.COLOR_CYAN);
+                DesktopUiFactory.COLOR_ACCENT);
         diagnostics.setOnClickListener(view ->
                 mActivity.openDiagnostics());
         addActionButton(actionGrid, diagnostics);
 
         final Button console = mUi.actionButton(
                 R.string.console_title,
-                DesktopUiFactory.COLOR_CYAN);
+                DesktopUiFactory.COLOR_ACCENT);
         console.setOnClickListener(view ->
                 mActivity.openConsole());
         addActionButton(actionGrid, console);
@@ -188,7 +188,7 @@ final class DesktopControlsController {
 if (RuntimeLimits.active().termux() && TermuxIntegration.isInstalled(mActivity)) {
             final Button termuxConsole = mUi.actionButton(
                     R.string.console_termux_title,
-                    DesktopUiFactory.COLOR_CYAN);
+                    DesktopUiFactory.COLOR_ACCENT);
             termuxConsole.setOnClickListener(view ->
                     mActivity.openTermuxConsole());
             addActionButton(actionGrid, termuxConsole);
@@ -196,21 +196,21 @@ if (RuntimeLimits.active().termux() && TermuxIntegration.isInstalled(mActivity))
 
         final Button taskManager = mUi.actionButton(
                 R.string.task_manager_title,
-                DesktopUiFactory.COLOR_CYAN);
+                DesktopUiFactory.COLOR_ACCENT);
         taskManager.setOnClickListener(view ->
                 mActivity.openTaskManager());
         addActionButton(actionGrid, taskManager);
 
         final Button activityExplorer = mUi.actionButton(
                 R.string.activity_explorer_title,
-                DesktopUiFactory.COLOR_CYAN);
+                DesktopUiFactory.COLOR_ACCENT);
         activityExplorer.setOnClickListener(view ->
                 mActivity.openActivityExplorer());
         addActionButton(actionGrid, activityExplorer);
 
         final Button wirelessSettings = mUi.actionButton(
                 R.string.action_wireless_settings,
-                DesktopUiFactory.COLOR_CYAN);
+                DesktopUiFactory.COLOR_ACCENT);
         wirelessSettings.setOnClickListener(view -> {
             mActivity.hideAllPanels();
             mActivity.invokeDesktopAction("wireless-settings");
@@ -219,19 +219,19 @@ if (RuntimeLimits.active().termux() && TermuxIntegration.isInstalled(mActivity))
 
         final Button settings = mUi.actionButton(
                 R.string.action_settings,
-                DesktopUiFactory.COLOR_CYAN);
+                DesktopUiFactory.COLOR_ACCENT);
         settings.setOnClickListener(view ->
                 mActivity.openSettings());
         addActionButton(actionGrid, settings);
 
         final Button capture = mUi.actionButton(
                 R.string.action_capture,
-                DesktopUiFactory.COLOR_CYAN);
+                DesktopUiFactory.COLOR_ACCENT);
         capture.setOnClickListener(view ->
                 mActivity.showCaptureControls());
         addActionButton(actionGrid, capture);
 
-        final Button shortcuts = mUi.actionButton(R.string.shortcuts_title, DesktopUiFactory.COLOR_CYAN);
+        final Button shortcuts = mUi.actionButton(R.string.shortcuts_title, DesktopUiFactory.COLOR_ACCENT);
         shortcuts.setOnClickListener(view -> {
             mActivity.hideAllPanels();
             mActivity.toggleShortcutHelp();
@@ -542,7 +542,7 @@ if (RuntimeLimits.active().termux() && TermuxIntegration.isInstalled(mActivity))
                 == DesktopPreferences.SYSTEM_DESKTOP_DPI
                 ? DisplayMetrics.DENSITY_DEVICE_STABLE : recommendedDpi;
         final Button defaultDpi = mUi.menuItem(
-                mActivity.getString(R.string.action_dpi_recommended, recommendedLabel),
+                mActivity.getString(R.string.action_dpi_recommended, scalePercent(recommendedLabel)),
                 DesktopUiFactory.COLOR_TEXT);
         defaultDpi.setTextSize(12);
         defaultDpi.setContentDescription(
@@ -607,8 +607,13 @@ if (RuntimeLimits.active().termux() && TermuxIntegration.isInstalled(mActivity))
     private void updateDpiValue(final int dpi) {
         if (mDpiValue != null) {
             mDpiValue.setText(mActivity.getString(
-                    R.string.dpi_value, Integer.valueOf(dpi)));
+                    R.string.dpi_value, Integer.valueOf(scalePercent(dpi)), Integer.valueOf(dpi)));
         }
+    }
+
+    /** Interface scale as a percentage; 160 dpi is Android's 100 %. */
+    static int scalePercent(final int dpi) {
+        return Math.round(dpi * 100.0f / DisplayMetrics.DENSITY_DEFAULT);
     }
 
     static int snapDpi(final int dpi, final int maximum) {

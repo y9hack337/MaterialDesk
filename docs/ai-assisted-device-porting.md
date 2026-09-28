@@ -5,7 +5,7 @@ supported Android device and wants to investigate it with an AI coding agent.
 It applies whether the agent runs on the phone, in Termux, or on a computer
 connected through MCP or ADB.
 
-The goal is not to produce a device-specific MagicDesk build. The result must
+The goal is not to produce a device-specific MaterialDesk build. The result must
 remain part of the single APK and codebase, with generic Android behavior kept
 shared and optional firmware behavior isolated behind an existing platform or
 SoC boundary.
@@ -14,7 +14,7 @@ SoC boundary.
 
 ### Evidence-only track
 
-Use this track when the device owner cannot build MagicDesk. The owner and AI
+Use this track when the device owner cannot build MaterialDesk. The owner and AI
 can still produce a useful, bounded handoff:
 
 1. Install the current signed development APK.
@@ -55,7 +55,7 @@ session-level invariants.
 
 Before editing:
 
-1. Record the exact MagicDesk build, Android fingerprint, shell service UID,
+1. Record the exact MaterialDesk build, Android fingerprint, shell service UID,
    active platform composition, display target, and reproduction steps.
 2. Refresh **Tools > Diagnostics** after the failure. Use **Extended vendor
    probe** only after explicit user confirmation and only when the standard
@@ -69,7 +69,7 @@ Before editing:
 UID 2000 is the portable baseline. A user-selected root-backed shell service
 may be used as a differential probe: if an operation works only as UID 0, that
 is evidence about the firmware permission boundary, not a reason to make root
-the normal MagicDesk path.
+the normal MaterialDesk path.
 
 Do not install an APK over a live desktop session. Close the session through
 the production **Close Desktop** path first so task state and system settings
@@ -77,7 +77,7 @@ are restored.
 
 ## Use MCP As The Observation Plane
 
-When the AI can connect to MagicDesk, enable **Settings > Automation > Local
+When the AI can connect to MaterialDesk, enable **Settings > Automation > Local
 MCP automation server**. A client on the same phone uses the loopback endpoint
 directly. A computer can use the documented `adb forward`, or the separate,
 explicitly enabled network listener on a trusted test LAN or protected VPN.
@@ -94,7 +94,7 @@ Start with semantic observations and actions:
 - `magicdesk.get_events` for bounded task, display, focus, pointer, crash, and
   UI ordering;
 - `magicdesk.list_ui_elements` and `magicdesk.invoke_ui_action` for real
-  MagicDesk controls;
+  MaterialDesk controls;
 - `magicdesk.run_self_test`, `magicdesk.get_self_test`, and
   `magicdesk.wait_for_state` for test execution and completion;
 - `magicdesk.capture_screenshot` or `magicdesk.sample_pixels` only when task

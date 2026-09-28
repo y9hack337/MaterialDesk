@@ -44,6 +44,9 @@ public final class MagicDeskApplicationStartupTest {
                 static class PlatformDesktopRecovery {
                     static void initialize() { calls.add("platform-recovery"); }
                 }
+                static class DesktopUiFactory {
+                    static void applySystemPalette(Context c) { calls.add("palette"); }
+                }
                 static class DesktopSystemTheme {
                     static void initialize(Context c) { calls.add("theme-recovery"); }
                 }
@@ -68,13 +71,13 @@ public final class MagicDeskApplicationStartupTest {
                     check(calls.equals(expected), "startup side effects in " + name + ": " + calls);
                 }
                 public static void verify() {
-                    List<String> primary = List.of("application", "uri-recovery", "home-recovery",
+                    List<String> primary = List.of("application", "palette", "uri-recovery", "home-recovery",
                             "integrations", "backend", "identity-policy", "termux-ui-observer",
                             "service", "setup-status", "diagnostics", "theme-recovery", "platform-recovery", "event");
                     start("magicdesk", primary);
                     for (String name : new String[] {"magicdesk:selftest",
                             "magicdesk:task_area_backstop", "magicdesk:another", "", null}) {
-                        start(name, List.of("application"));
+                        start(name, List.of("application", "palette"));
                     }
                     start("magicdesk", primary);
                     check(!App.isPrimaryProcess("magicdesk", null), "unknown owner accepted");

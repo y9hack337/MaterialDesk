@@ -252,6 +252,24 @@ public final class DesktopOperations {
         }
     }
 
+    static void toggleTaskOverview() {
+        if (!MagicDeskRuntime.toggleTaskOverview(MagicDeskRuntime.inputDisplayId())) {
+            Log.w(TAG, "MagicDesk desktop is unavailable for task view");
+        }
+    }
+
+    static void showStart() {
+        if (!MagicDeskRuntime.showStart(MagicDeskRuntime.inputDisplayId())) {
+            Log.w(TAG, "MagicDesk desktop is unavailable for Start");
+        }
+    }
+
+    static void openBuiltin(final String builtin) {
+        if (!MagicDeskRuntime.openBuiltin(MagicDeskRuntime.inputDisplayId(), builtin)) {
+            Log.w(TAG, "MagicDesk desktop is unavailable for " + builtin);
+        }
+    }
+
     static void toggleNotificationCenter() {
         if (!MagicDeskRuntime.toggleNotificationCenter(MagicDeskRuntime.inputDisplayId())) {
             Log.w(TAG, "MagicDesk desktop is unavailable for notifications");

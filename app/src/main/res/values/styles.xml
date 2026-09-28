@@ -1,16 +1,28 @@
 <resources>
     <style name="UserPromptTheme" parent="@android:style/Theme.Material.Dialog.Alert">
-        <item name="android:colorAccent">#22D3EE</item>
+        <item name="android:colorAccent">@android:color/system_primary_dark</item>
+        <item name="android:colorControlActivated">@android:color/system_primary_dark</item>
+        <item name="android:colorBackground">@android:color/system_surface_dark</item>
+        <item name="android:colorBackgroundFloating">@android:color/system_surface_container_high_dark</item>
+        <item name="android:textColorPrimary">@android:color/system_on_surface_dark</item>
+        <item name="android:textColorSecondary">@android:color/system_on_surface_variant_dark</item>
+        <item name="android:dialogCornerRadius">28dp</item>
         <item name="android:windowNoTitle">true</item>
         <item name="android:windowCloseOnTouchOutside">true</item>
     </style>
     <style name="AppTheme" parent="@android:style/Theme.Material.NoActionBar">
         <item name="android:windowNoTitle">true</item>
         <item name="android:fontFamily">sans</item>
-        <item name="android:colorAccent">#22D3EE</item>
-        <item name="android:navigationBarColor">#090D14</item>
+        <item name="android:colorAccent">@android:color/system_primary_dark</item>
+        <item name="android:colorControlActivated">@android:color/system_primary_dark</item>
+        <item name="android:colorBackground">@android:color/system_surface_dark</item>
+        <item name="android:colorBackgroundFloating">@android:color/system_surface_container_high_dark</item>
+        <item name="android:textColorPrimary">@android:color/system_on_surface_dark</item>
+        <item name="android:textColorSecondary">@android:color/system_on_surface_variant_dark</item>
+        <item name="android:dialogCornerRadius">28dp</item>
+        <item name="android:navigationBarColor">@android:color/system_surface_dark</item>
         <item name="android:windowLightStatusBar">false</item>
-        <item name="android:statusBarColor">#090D14</item>
+        <item name="android:statusBarColor">@android:color/system_surface_dark</item>
     </style>
 
     <style name="TransparentActivityTheme" parent="@android:style/Theme.Material.NoActionBar">
@@ -18,7 +30,13 @@
         <item name="android:windowIsTranslucent">true</item>
         <item name="android:windowBackground">@android:color/transparent</item>
         <item name="android:windowDisablePreview">true</item>
-        <item name="android:colorAccent">#22D3EE</item>
+        <item name="android:colorAccent">@android:color/system_primary_dark</item>
+        <item name="android:colorControlActivated">@android:color/system_primary_dark</item>
+        <item name="android:colorBackground">@android:color/system_surface_dark</item>
+        <item name="android:colorBackgroundFloating">@android:color/system_surface_container_high_dark</item>
+        <item name="android:textColorPrimary">@android:color/system_on_surface_dark</item>
+        <item name="android:textColorSecondary">@android:color/system_on_surface_variant_dark</item>
+        <item name="android:dialogCornerRadius">28dp</item>
     </style>
 
     <style name="TaskAreaBackstopTheme" parent="@android:style/Theme.Material.NoActionBar">

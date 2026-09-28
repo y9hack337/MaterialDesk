@@ -183,7 +183,10 @@ final class DisplayInputSession {
     boolean movePointer(final float x, final float y) { return mMouse.movePointer(x, y); }
     boolean clickPointer(final int button) { return mMouse.clickPointer(button); }
     boolean setPrimaryButtonPressed(final boolean pressed) { return mMouse.setPrimaryButtonPressed(pressed); }
-    boolean scrollPointer(final float amount) { return mMouse.scrollPointer(amount); }
+
+    boolean scrollPointer(final float vertical, final float horizontal) {
+        return mMouse.scrollPointer(vertical, horizontal);
+    }
 
     DesktopInputDiagnostics.BridgeSnapshot captureMouseDiagnostics() {
         return mMouse.captureDiagnostics();

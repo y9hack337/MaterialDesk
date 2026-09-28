@@ -1,6 +1,6 @@
 # Nubia Vendor Interface Audit
 
-This is an inventory of the mechanisms used by MagicDesk, checked against
+This is an inventory of the mechanisms used by MaterialDesk, checked against
 the current source. It covers shared compatibility
 policies, active vendor integrations, their owners, and known limitations.
 Test runs and their results belong in compatibility reports, not this inventory.
@@ -65,7 +65,7 @@ actual input-routing and shortcut-filter readiness separately.
 | `PHONE_TASK_ISOLATION` | `WINDOWING` | Phone-side launch/migration interception and freeform normalization during wired/wireless sessions. |
 | `PHONE_TASK_RECOVERY` | `WINDOWING` | Reconcile phone task modes and retained WMShell desktop membership around session setup, cleanup, and display loss. |
 | `STALE_RECENTS_CLEANUP` | `WINDOWING` | Remove matching orphaned phone freeform Recents entries during phone desktop observation. |
-| `RECENTS_TO_HOME` | `PHONE_UI` | Route the system Recents Activity request to MagicDesk HOME while its session is active. |
+| `RECENTS_TO_HOME` | `PHONE_UI` | Route the system Recents Activity request to MaterialDesk HOME while its session is active. |
 
 These six implementations do not depend on private Nubia input or window-control
 APIs. Their default selection is firmware policy; portability alone does not
@@ -110,7 +110,7 @@ a null title view, while `TaskView.setThumbnailOrientation()` asserts that the
 view is non-null. Display-0 freeform tasks grouped through WMShell's desktop
 repository can reach this crash.
 
-MagicDesk's shared HOME lifecycle presents `PhoneHomeActivity` on display 0,
+MaterialDesk's shared HOME lifecycle presents `PhoneHomeActivity` on display 0,
 with ordinary Start or Desktop content according to local workspace residency.
 HOME ownership by itself does not normalize other tasks or clear WMShell
 repository membership.
@@ -131,7 +131,7 @@ be assumed to pass through this interceptor.
 window modes. It can take a retained task through WMShell desktop entry and
 native fullscreen exit to clear that membership. `ShellFreeformTaskCleanup`
 separately targets matching orphaned phone Recents entries. These are broader
-compatibility operations, not just cleanup of MagicDesk-owned surfaces.
+compatibility operations, not just cleanup of MaterialDesk-owned surfaces.
 
 `ShellPhoneOverviewRouter` resolves Android's `config_recentsComponentName`
 and cancels that exact launch only while the app-side callback confirms an
@@ -165,7 +165,7 @@ The access column distinguishes ordinary app-UID operations from work performed
 by the authorized shell UserService. Capability detection and restoration
 remain mandatory even for app-accessible methods.
 
-| Interface | Access used by MagicDesk | Production owner and purpose |
+| Interface | Access used by MaterialDesk | Production owner and purpose |
 | --- | --- | --- |
 | `redmagic.app.manager` property methods | Ordinary app UID | `NubiaDesktopPropertyManager`: two allowlisted desktop setup properties. |
 | `edid_modes` / `hpd` | Shell, only when accessible | `NubiaHdmiModeController`: advertised physical HDMI timing selection. |
@@ -185,7 +185,7 @@ remain mandatory even for app-accessible methods.
 The inspected service clears calling identity and directly accesses
 `SystemProperties`, without a key allowlist or permission check.
 
-MagicDesk confines that capability to:
+MaterialDesk confines that capability to:
 
 - `persist.wm.debug.desktop_mode_enforce_device_restrictions`
 - `persist.wm.debug.desktop_use_rounded_corners`
@@ -199,7 +199,7 @@ than interpreting an empty value as a disabled restriction. Shared setup also en
 `enable_freeform_support` and `force_resizable_activities` through shell access
 on every platform. These shared settings and any pending reboot remain required.
 Android's optional `force_desktop_mode_on_external_displays` is
-controlled separately from ordinary MagicDesk Settings; it is not part of
+controlled separately from ordinary MaterialDesk Settings; it is not part of
 firmware readiness or a Nubia API.
 
 This grants configuration access, not arbitrary task ownership; WMShell and
@@ -233,7 +233,7 @@ with that flag enabled it searches for an active freeform/external display.
 That fallback also exists in
 [AOSP Android 15](https://android.googlesource.com/platform/frameworks/base/+/refs/heads/android15-release/services/core/java/com/android/server/wm/InputManagerCallback.java).
 Setting a display's default windowing mode to freeform does not itself enable
-this global pointer-routing flag. MagicDesk explicitly associates physical input
+this global pointer-routing flag. MaterialDesk explicitly associates physical input
 locations and its virtual phone pointer instead. A cursor absent from the external screen is therefore not
 by itself evidence of a vendor rendering defect.
 
@@ -254,7 +254,7 @@ and an optional circular movement constraint absent from the corresponding
 [AOSP Android 16 implementation](https://android.googlesource.com/platform/frameworks/base/+/refs/heads/android16-release/libs/input/MouseCursorController.cpp).
 The constraint applies when the mode field is `1`; it limits the new position
 to a stored center and radius before viewport clipping. It affects coordinates,
-not just cursor visibility, and operates below MagicDesk's virtual transport.
+not just cursor visibility, and operates below MaterialDesk's virtual transport.
 
 The inspected constructor at `0x15668` does not initialize the sensitivity,
 mode, or radius fields at offsets `0x15c`, `0x160`, and `0x164`; the allocation
@@ -302,7 +302,7 @@ The verified firmware supports `power-reset`; the resolver also supports
 `power-on` when that is the available restore operation. Declaration probes
 do not change power or UID protection.
 
-The helper's heartbeat/watchdog owns restoration if MagicDesk, Shizuku, or
+The helper's heartbeat/watchdog owns restoration if MaterialDesk, Shizuku, or
 the session ends. It is active screen-off ownership, not idle desktop polling.
 An unexpected helper failure does not automatically start another screen-off
 request. The last workspace Close hands back HOME. Cleanup restores any owned
@@ -315,7 +315,7 @@ The vendor-specific part is `cfreezer`,
 `com.zte.performance.cfreezer.ICpuFreezerManager`, and
 `noteCpuFreezerUidWorking(uid, working, "service")`.
 `NubiaCpuFreezerWorkingState` uses its transient working-state protocol from
-shell UID 2000. The shared `ShellBackgroundWork` owner protects MagicDesk and the
+shell UID 2000. The shared `ShellBackgroundWork` owner protects MaterialDesk and the
 union of application UIDs observed on the selected display. Task changes update
 that union through an event-only framework observer; a temporarily absent task
 does not lose protection. Overlapping leases share one working-state session per
@@ -329,7 +329,7 @@ The 2026-09-08 inspection of NX809J build `20260204.221845`
 found selected-HOME exemptions in `CpuFreezerManagerServiceV2`.
 `CpuFreezerUtils.getLauncherPackageName` and `AppInfoUtils.isCurrentLauncher`
 resolve MAIN/HOME; the cached identity refreshes on preferred-activity changes
-and screen-off. MagicDesk uses scoped working-state claims independently of
+and screen-off. MaterialDesk uses scoped working-state claims independently of
 HOME. In a secure-lock experiment, the MCP host froze without HOME, whereas explicitly
 retained transient working state allowed sustained access to an always-unlocked
 virtual display under UID 2000. Keyguard exemption alone does not prevent freezing.
@@ -345,7 +345,7 @@ establish protection for other apps.
 cooling nodes. On the verified firmware, `cn.nubia.fan` observes settings
 and performs the protected hardware writes.
 
-| Setting | Values used by MagicDesk |
+| Setting | Values used by MaterialDesk |
 | --- | --- |
 | `fan_state_of_manual` | `0` off, `1` enabled, `-100`/`100` stock automatic sentinels |
 | `fan_state_of_mode` | `1` intelligent, `0` extreme |

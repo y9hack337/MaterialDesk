@@ -278,7 +278,7 @@ final class AppPresentationSettingsView {
                     new int[0]
                 },
                 new int[]{
-                    DesktopUiFactory.COLOR_CYAN,
+                    DesktopUiFactory.COLOR_ACCENT,
                     DesktopUiFactory.COLOR_MUTED
                 }));
         return button;
@@ -288,7 +288,7 @@ final class AppPresentationSettingsView {
             final String text,
             final int descriptionResId) {
         final Button button = mUi.actionButton(
-                text, DesktopUiFactory.COLOR_CYAN);
+                text, DesktopUiFactory.COLOR_ACCENT);
         button.setTextSize(18);
         button.setMinWidth(0);
         button.setMinimumWidth(0);
@@ -334,7 +334,7 @@ final class AppPresentationSettingsView {
                 mActivity.getString(
                         R.string.app_presentation_scale_value,
                         profile.profile.scalePercent),
-                DesktopUiFactory.COLOR_CYAN,
+                DesktopUiFactory.COLOR_ACCENT,
                 13);
         scale.setTypeface(Typeface.DEFAULT_BOLD);
         row.addView(scale, new LinearLayout.LayoutParams(
@@ -383,7 +383,7 @@ final class AppPresentationSettingsView {
         header.setMinimumHeight(dp(46));
         final ImageView icon = new ImageView(mActivity);
         icon.setImageResource(iconResId);
-        icon.setColorFilter(DesktopUiFactory.COLOR_CYAN);
+        icon.setColorFilter(DesktopUiFactory.COLOR_ACCENT);
         header.addView(icon, new LinearLayout.LayoutParams(dp(24), dp(24)));
         final TextView title = text(
                 mActivity.getString(titleResId),
@@ -397,7 +397,7 @@ final class AppPresentationSettingsView {
         header.addView(title, titleParams);
         content.addView(header, matchWrap());
         final View divider = new View(mActivity);
-        divider.setBackgroundColor(DesktopUiFactory.COLOR_CYAN);
+        divider.setBackgroundColor(DesktopUiFactory.COLOR_ACCENT);
         content.addView(divider, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, dp(1)));
         return content;

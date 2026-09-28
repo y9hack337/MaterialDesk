@@ -962,6 +962,25 @@ mView.setTerminalVisible(RuntimeLimits.active().termux() && TermuxIntegration.is
     }
 
     @Override
+    public void onSelectAll(final boolean selected) {
+        if (selected) {
+            selectAll();
+        } else {
+            mSelected.clear();
+            mSelectionAnchorPath = null;
+            renderSelection();
+        }
+    }
+
+    @Override
+    public void onShare() {
+        final ShellFileInfo file = singleSelection();
+        if (file != null && !file.directory) {
+            shareFile(file);
+        }
+    }
+
+    @Override
     public void onProperties() {
         final ShellFileInfo file = singleSelection();
         if (file != null) {

@@ -75,7 +75,7 @@ redraw for all clients, including one where the pane fits. Hiding the IME can
 cross that boundary by increasing this console's height. The renderer receives
 only repaints in that case; resizing did not disable its animation. Client
 dimensions and raw PTY commands must be checked together when diagnosing this
-case. MagicDesk does not detach other clients or alter tmux sizing options to
+case. MaterialDesk does not detach other clients or alter tmux sizing options to
 force a particular output encoding.
 Writes between scroll operations are tracked separately from cell transport and
 its blanking. Ordinary updates, including changed letters in existing text,
@@ -118,8 +118,8 @@ terminal clipboard protocols remain exact; no-selection Copy reads the transcrip
 
 Phone Control Panel's **Apps** launcher and both console toolbars use one
 **Terminal sessions** picker. All session types are created in that picker.
-It combines retained MagicDesk PTYs with tmux sessions discovered in the selected
-Termux package. A tmux session and its MagicDesk client appear once; live tmux
+It combines retained MaterialDesk PTYs with tmux sessions discovered in the selected
+Termux package. A tmux session and its MaterialDesk client appear once; live tmux
 client PIDs identify the current session even after switching inside tmux.
 Ordinary shells that happen to run tmux are not reclassified as managed clients.
 Discovery runs on demand, and missing Termux access does not hide local terminals.
@@ -237,7 +237,7 @@ chafa --probe off --animate off -f kitty -s 40x12 image.png
 ```
 
 Termux packages can produce these formats even if Termux's own terminal view
-cannot display them. The terminal receiving the PTY output is MagicDesk.
+cannot display them. The terminal receiving the PTY output is MaterialDesk.
 
 ### Images Inside tmux
 
@@ -249,11 +249,11 @@ tmux set -g allow-passthrough on
 chafa --probe off --animate off --passthrough tmux -f kitty -s 30x10 image.png
 ```
 
-MagicDesk reads the unwrapped graphics protocol, while tmux moves/repaints its
+MaterialDesk reads the unwrapped graphics protocol, while tmux moves/repaints its
 placeholder cells as text. Image prototypes survive clear-screen redraws and
 window switches. If a pane becomes narrower than an already printed image row,
 tmux can wrap its cells into strips. The producing application must redraw the
-preview for its new dimensions; MagicDesk does not guess or rearrange tmux cells.
+preview for its new dimensions; MaterialDesk does not guess or rearrange tmux cells.
 Native Sixel retention across pane changes depends on tmux's implementation.
 
 The rendering instrumentation also exercises decoded RGB, alpha, PNG, Sixel,
@@ -264,7 +264,7 @@ Graphics are not included in text transcript/selection output.
 
 ## Supported OSC Sequences
 
-| OSC | Meaning | MagicDesk behavior |
+| OSC | Meaning | MaterialDesk behavior |
 | --- | --- | --- |
 | `0;title`, `2;title` | Window title | Native task description/window title and session labels; bounded to 1024 characters. Display labels remove control/format characters. |
 | `8;parameters;URI` | Hyperlink start; empty URI ends it | URI and optional `id` are cell attributes, preserved during editing, scrolling and reflow. Links are underlined; hovering shows the destination. |
@@ -295,13 +295,13 @@ cancels its notification; detaching its window does not terminate the session.
 
 ## Shell Hooks
 
-Android `sh` (mksh) reads MagicDesk's owned `ENV` file. It publishes the current
+Android `sh` (mksh) reads MaterialDesk's owned `ENV` file. It publishes the current
 directory through OSC 0 and prompt/input boundaries through OSC 133 A/B. Its
 prompt includes the current path, distinguishes `$` from `#` and retains a nonzero
 exit status. Paths are inserted as text, with terminal control characters removed.
 The line editor's native nonprinting delimiters exclude OSC from prompt width.
 OSC titles update the Android task and session label.
-There is no reliable pre-execution hook in this shell; MagicDesk does not infer
+There is no reliable pre-execution hook in this shell; MaterialDesk does not infer
 execution from Enter, output timing or process polling.
 
 Termux's login dispatcher is resolved to its selected shell before starting the
@@ -351,7 +351,7 @@ OSC, Sixel and Kitty graphics. There is no renderer injection or overlay.
 For output inside a running tmux pane, use `tmux.panes`, then `tmux.emit` with
 the returned opaque `target`. An optional `sessionId` filters pane discovery;
 without it, discovery lists live writable panes across the selected Termux
-package's default tmux server. Detached tmux sessions need no MagicDesk window.
+package's default tmux server. Detached tmux sessions need no MaterialDesk window.
 Window/pane active flags help the caller select a destination, but emission
 never silently changes the selection to the currently active pane. Dead panes
 have no live output target. Custom tmux sockets are not exposed by this API.
@@ -387,7 +387,7 @@ automatically retry a partial write or `OUTCOME_UNKNOWN`: missing acknowledgemen
 does not undo bytes or guarantee cancellation. There is no replay queue.
 All three commands use the existing `shell` automation grant and require neither
 Desktop nor a visible window. CLI and MCP use the same catalog and executor.
-Ordinary terminal IDs are unique across MagicDesk process restarts, so a stale
+Ordinary terminal IDs are unique across MaterialDesk process restarts, so a stale
 input/output request cannot select a newly created console with a reused number.
 
 ### Command Stdout
@@ -415,7 +415,7 @@ Raw stdout needs no MIME type and passes through unchanged, including ANSI or
 already encoded graphics. PNG uses bounded
 [Kitty chunks](https://sw.kovidgoyal.net/kitty/graphics-protocol/#transferring-pixel-data),
 without decoding or buffering the complete image. PNG to a tmux pane uses its
-DCS passthrough protocol and requires `allow-passthrough`; MagicDesk does not
+DCS passthrough protocol and requires `allow-passthrough`; MaterialDesk does not
 change that server setting. Plain Kitty placement may be erased by tmux redraws;
 it is not a persistent placeholder-based image. Raw preformatted streams remain
 under the producing application's control. PNG responses are suppressed so

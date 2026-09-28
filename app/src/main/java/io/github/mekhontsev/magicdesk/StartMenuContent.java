@@ -1,6 +1,7 @@
 package io.github.mekhontsev.magicdesk;
 
 import android.annotation.SuppressLint;
+import android.graphics.Color;
 import android.app.Activity;
 import android.graphics.drawable.StateListDrawable;
 import android.text.Editable;
@@ -12,7 +13,7 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.GridLayout;
+import android.widget.GridView;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -54,6 +55,8 @@ final class StartMenuContent {
     static final int MENU_TOOLS = 2;
     static final int MENU_CAPTURE = 3;
     static final int MENU_RUNNING = 4;
+    /** Search results scroll, so the limit only bounds ranking work. */
+    private static final int SEARCH_RESULT_LIMIT = 30;
 
     private final Activity mActivity;
     private final Host mHost;
@@ -71,13 +74,21 @@ final class StartMenuContent {
     private LinearLayout mSearchRow;
     private StartLaunchControls mLaunchControls;
     private boolean mFocusable = true;
-    private int mMode = MENU_RECENT;
-    private int mPage;
+    /** Like Android's application drawer, Start opens on every application. */
+    private int mMode = MENU_APPS;
     private int mSearchSelection;
     private String mSearchQuery = "";
     private int mColumns = 3;
-    private int mRows = 3;
     private boolean mPrepared, mReleased;
+    private boolean mLaunchOptionsVisible;
+    /** The grid scrolls continuously; its position survives catalog refreshes. */
+    private GridView mGrid;
+    private int mGridFirstPosition;
+    /** Marks recyclable application tiles. */
+    private static final Object TILE_TAG = new Object();
+    private int mSurface;
+    private int mOnSurface;
+    private int mSearchFill;
 
     StartMenuContent(
             final Activity activity,
@@ -86,7 +97,6 @@ final class StartMenuContent {
             final Host host) {
         mHost = host;
         mScope = scope;
-        mMode = scope == StartMenuScope.APPLICATIONS ? MENU_APPS : MENU_RECENT;
         mActivity = activity;
         mCatalog = ApplicationCatalog.get(activity);
         mUi = ui;
@@ -126,19 +136,35 @@ final class StartMenuContent {
             }
         };
         menu.setOrientation(LinearLayout.VERTICAL);
-        menu.setPadding(dp(14), dp(14), dp(14), dp(12));
-        if (mScope == StartMenuScope.DESKTOP) {
+        menu.setPadding(dp(18), dp(8), dp(18), dp(12));
+        // The drawer uses the same dynamic surface roles as every other
+        // MagicDesk surface; the phone Start keeps its host's background.
+        final boolean drawer = mScope == StartMenuScope.DESKTOP;
+        mSurface = drawer ? DesktopUiFactory.COLOR_PANEL : DesktopUiFactory.COLOR_BACKGROUND;
+        mOnSurface = DesktopUiFactory.COLOR_TEXT;
+        mSearchFill = DesktopUiFactory.COLOR_PANEL_FOCUS;
+        if (drawer) {
             menu.setBackground(mUi.rounded(
-                    DesktopUiFactory.COLOR_PANEL, dp(18),
-                    DesktopUiFactory.COLOR_CYAN));
+                    mSurface, dp(DesktopUiFactory.SHAPE_EXTRA_LARGE_DP), mSurface));
+            final View handle = new View(mActivity);
+            handle.setBackground(DesktopUiFactory.filled(
+                    DesktopUiFactory.withAlpha(mOnSurface, 0.45f),
+                    dp(DesktopUiFactory.SHAPE_FULL_DP)));
+            final LinearLayout.LayoutParams handleParams =
+                    new LinearLayout.LayoutParams(dp(32), dp(4));
+            handleParams.gravity = Gravity.CENTER_HORIZONTAL;
+            handleParams.setMargins(0, 0, 0, dp(14));
+            menu.addView(handle, handleParams);
+        } else {
+            menu.setPadding(dp(18), dp(18), dp(18), dp(12));
         }
         mSearch = new EditText(mActivity);
         final int searchHint = mScope == StartMenuScope.APPLICATIONS
                 ? R.string.search_phone_apps_hint : R.string.search_apps_hint;
         mSearch.setHint(searchHint);
-        mSearch.setHintTextColor(DesktopUiFactory.COLOR_MUTED);
-        mSearch.setTextColor(DesktopUiFactory.COLOR_TEXT);
-        mSearch.setTextSize(14);
+        mSearch.setHintTextColor(DesktopUiFactory.withAlpha(mOnSurface, 0.7f));
+        mSearch.setTextColor(mOnSurface);
+        mSearch.setTextSize(15);
         mSearch.setSingleLine(true);
         mSearch.setShowSoftInputOnFocus(false);
         mSearch.setOnTouchListener((view, event) -> {
@@ -147,11 +173,16 @@ final class StartMenuContent {
             }
             return false;
         });
-        mSearch.setPadding(dp(12), dp(8), dp(12), dp(8));
-        mSearch.setBackground(mUi.rounded(
-                DesktopUiFactory.COLOR_PANEL_ALT,
-                dp(8),
-                DesktopUiFactory.COLOR_PANEL_ALT));
+        // Material search bar: the pill belongs to the row, which also holds
+        // the trailing launch-options action.
+        mSearch.setPadding(dp(4), dp(8), dp(8), dp(8));
+        mSearch.setBackground(null);
+        final android.graphics.drawable.Drawable searchIcon =
+                mActivity.getDrawable(R.drawable.ic_search).mutate();
+        searchIcon.setTint(mOnSurface);
+        searchIcon.setBounds(0, 0, dp(20), dp(20));
+        mSearch.setCompoundDrawablesRelative(searchIcon, null, null, null);
+        mSearch.setCompoundDrawablePadding(dp(12));
         mSearch.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(
@@ -200,12 +231,24 @@ final class StartMenuContent {
         mContent = new LinearLayout(mActivity);
         mSearchRow = new LinearLayout(mActivity);
         mSearchRow.setGravity(Gravity.CENTER_VERTICAL);
-        mSearchRow.addView(mSearch, new LinearLayout.LayoutParams(0, dp(48), 1));
+        mSearchRow.setPadding(dp(16), 0, dp(6), 0);
+        mSearchRow.setBackground(DesktopUiFactory.filled(
+                mSearchFill, dp(DesktopUiFactory.SHAPE_FULL_DP)));
+        mSearchRow.addView(mSearch, new LinearLayout.LayoutParams(0, dp(52), 1));
+        final android.widget.ImageButton launchOptions = mUi.menuIconButton(
+                R.drawable.ic_more, R.string.start_launch_options);
+        launchOptions.setImageTintList(android.content.res.ColorStateList.valueOf(mOnSurface));
+        launchOptions.setOnClickListener(view -> {
+            mLaunchOptionsVisible = !mLaunchOptionsVisible;
+            render();
+        });
+        mHost.automation().register(launchOptions, "start.launch_options", "button",
+                mActivity.getString(R.string.start_launch_options));
+        mSearchRow.addView(launchOptions, new LinearLayout.LayoutParams(dp(40), dp(40)));
         mLaunchControls = new StartLaunchControls(mActivity, mUi, mHost.automation(), this::destinationChanged);
         mContent.setOrientation(LinearLayout.VERTICAL);
         final LinearLayout.LayoutParams contentParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, 0, 1);
-        contentParams.setMargins(0, dp(10), 0, 0);
         menu.addView(mContent, contentParams);
         mPanel = menu;
         mHost.automation().register(
@@ -217,33 +260,31 @@ final class StartMenuContent {
         if (mContent == null) {
             return;
         }
+        rememberGridScroll();
         mContent.removeAllViews();
         mBody = null;
+
+        if (!isUtilityMode(mMode) && mSearch != null) {
+            mContent.addView(mSearchRow, new LinearLayout.LayoutParams(
+                    LinearLayout.LayoutParams.MATCH_PARENT, dp(52)));
+        }
 
         final LinearLayout tabs = new LinearLayout(mActivity);
         tabs.setOrientation(LinearLayout.HORIZONTAL);
         tabs.setGravity(Gravity.CENTER_VERTICAL);
-        tabs.addView(createTab(R.string.section_recent, MENU_RECENT),
-                new LinearLayout.LayoutParams(
-                        0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-        final LinearLayout.LayoutParams appsTabParams =
-                new LinearLayout.LayoutParams(
-                        0, LinearLayout.LayoutParams.WRAP_CONTENT, 1);
-        appsTabParams.setMargins(dp(5), 0, dp(5), 0);
-        tabs.addView(createTab(R.string.section_apps, MENU_APPS),
-                appsTabParams);
+        addTab(tabs, R.string.section_apps, MENU_APPS);
+        addTab(tabs, R.string.section_recent, MENU_RECENT);
         if (mHost.hasRunningSection()) {
-            tabs.addView(createTab(R.string.section_running, MENU_RUNNING),
-                    new LinearLayout.LayoutParams(0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+            addTab(tabs, R.string.section_running, MENU_RUNNING);
         }
         if (mScope == StartMenuScope.DESKTOP) {
-            tabs.addView(createTab(R.string.section_tools, MENU_TOOLS),
-                    new LinearLayout.LayoutParams(
-                            0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+            addTab(tabs, R.string.section_tools, MENU_TOOLS);
         }
-        mContent.addView(tabs, new LinearLayout.LayoutParams(
+        final LinearLayout.LayoutParams tabsParams = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT));
+                LinearLayout.LayoutParams.WRAP_CONTENT);
+        tabsParams.setMargins(0, dp(12), 0, 0);
+        mContent.addView(tabs, tabsParams);
 
         if (mMode == MENU_TOOLS) {
             addTools();
@@ -254,14 +295,11 @@ final class StartMenuContent {
             return;
         }
 
-        if (mSearch != null) {
-            final LinearLayout.LayoutParams searchParams =
-                    new LinearLayout.LayoutParams(
-                            LinearLayout.LayoutParams.MATCH_PARENT,
-                            LinearLayout.LayoutParams.WRAP_CONTENT);
-            searchParams.setMargins(0, dp(10), 0, 0);
-            mContent.addView(mSearchRow, searchParams);
-            mContent.addView(mLaunchControls.view(), new LinearLayout.LayoutParams(-1, dp(52)));
+        if (mLaunchOptionsVisible && mSearch != null) {
+            final LinearLayout.LayoutParams optionsParams =
+                    new LinearLayout.LayoutParams(-1, dp(52));
+            optionsParams.setMargins(0, dp(8), 0, 0);
+            mContent.addView(mLaunchControls.view(), optionsParams);
         }
 
         mBody = new LinearLayout(mActivity);
@@ -270,10 +308,8 @@ final class StartMenuContent {
                 oldLeft, oldTop, oldRight, oldBottom) -> {
             final float density = mActivity.getResources().getDisplayMetrics().density;
             final int columns = StartMenuLayout.columns(Math.round((right - left) / density));
-            final int rows = StartMenuLayout.rows(Math.round((bottom - top) / density));
-            if (right > left && bottom > top && (columns != mColumns || rows != mRows)) {
+            if (right > left && columns != mColumns) {
                 mColumns = columns;
-                mRows = rows;
                 view.post(() -> {
                     if (view == mBody && view.isAttachedToWindow()) {
                         renderBody();
@@ -281,14 +317,16 @@ final class StartMenuContent {
                 });
             }
         });
-        mContent.addView(mBody, new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1));
+        final LinearLayout.LayoutParams bodyParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1);
+        bodyParams.setMargins(0, dp(6), 0, 0);
+        mContent.addView(mBody, bodyParams);
         renderBody();
     }
 
     void showSection(final int mode) {
         mMode = mode;
-        mPage = 0;
+        mGridFirstPosition = 0;
         mSearchSelection = 0;
         mSearchQuery = "";
         if (mSearch != null && mSearch.length() > 0) {
@@ -350,7 +388,7 @@ final class StartMenuContent {
     }
 
     private void destinationChanged() {
-        mPage = 0;
+        mGridFirstPosition = 0;
         mSearchSelection = 0;
         mSearchController.update(mSearchQuery, entries(mMode, true));
         renderBody();
@@ -404,6 +442,7 @@ final class StartMenuContent {
         if (mBody == null) {
             return;
         }
+        rememberGridScroll();
         mBody.removeAllViews();
 
         final var android = mCatalog.snapshot().android();
@@ -411,7 +450,7 @@ final class StartMenuContent {
             final TextView status = new TextView(mActivity);
             status.setText(android.error().isEmpty()
                     ? mActivity.getString(R.string.apps_loading) : android.error());
-            status.setTextColor(DesktopUiFactory.COLOR_MUTED);
+            status.setTextColor(DesktopUiFactory.withAlpha(mOnSurface, 0.75f));
             status.setTextSize(14);
             status.setGravity(Gravity.CENTER);
             mBody.addView(status, new LinearLayout.LayoutParams(-1, 0, 1));
@@ -432,59 +471,100 @@ final class StartMenuContent {
             empty.setText(recentError.isEmpty() ? mActivity.getString(mMode == MENU_RECENT
                     ? R.string.recent_apps_empty
                     : R.string.status_no_apps) : recentError);
-            empty.setTextColor(DesktopUiFactory.COLOR_MUTED);
+            empty.setTextColor(DesktopUiFactory.withAlpha(mOnSurface, 0.75f));
             empty.setTextSize(14);
             empty.setGravity(Gravity.CENTER);
             mBody.addView(empty, new LinearLayout.LayoutParams(
                     LinearLayout.LayoutParams.MATCH_PARENT, 0, 1));
             return;
         }
-        final int pageSize = getPageSize();
-        final int pageCount = Math.max(
-                1, (menuApps.size() + pageSize - 1) / pageSize);
-        if (mPage >= pageCount) {
-            mPage = pageCount - 1;
+        // A recycling grid builds only visible tiles, so opening and
+        // scrolling stay smooth with hundreds of applications.
+        final GridView grid = new GridView(mActivity);
+        grid.setNumColumns(getColumnCount());
+        grid.setStretchMode(GridView.STRETCH_COLUMN_WIDTH);
+        grid.setHorizontalSpacing(dp(4));
+        grid.setVerticalSpacing(dp(8));
+        grid.setSelector(new android.graphics.drawable.ColorDrawable(Color.TRANSPARENT));
+        grid.setDrawSelectorOnTop(false);
+        grid.setVerticalScrollBarEnabled(true);
+        grid.setScrollBarStyle(View.SCROLLBARS_OUTSIDE_OVERLAY);
+        grid.setScrollbarFadingEnabled(false);
+        grid.setScrollBarSize(dp(4));
+        grid.setVerticalScrollbarThumbDrawable(DesktopUiFactory.filled(
+                DesktopUiFactory.withAlpha(mOnSurface, 0.45f),
+                dp(DesktopUiFactory.SHAPE_FULL_DP)));
+        grid.setOverScrollMode(View.OVER_SCROLL_IF_CONTENT_SCROLLS);
+        grid.setAdapter(new android.widget.BaseAdapter() {
+            @Override public int getCount() { return menuApps.size(); }
+            @Override public Object getItem(final int position) { return menuApps.get(position); }
+            @Override public long getItemId(final int position) { return position; }
+            @Override public View getView(final int position, final View recycled,
+                    final android.view.ViewGroup parent) {
+                final StartMenuEntry entry = menuApps.get(position);
+                if (recycled instanceof LinearLayout tile && tile.getTag() == TILE_TAG) {
+                    bindAppTile(tile, entry);
+                    return tile;
+                }
+                return createAppTile(entry);
+            }
+        });
+        mBody.addView(grid, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, 0, 1));
+        mGrid = grid;
+        final int restorePosition = mGridFirstPosition;
+        if (restorePosition > 0 && restorePosition < menuApps.size()) {
+            grid.setSelection(restorePosition);
         }
-        if (mPage < 0) {
-            mPage = 0;
-        }
-
-        final GridLayout grid = new GridLayout(mActivity);
-        grid.setColumnCount(getColumnCount());
-        final int start = mPage * pageSize;
-        final int end = Math.min(menuApps.size(), start + pageSize);
-        for (int index = start; index < end; index++) {
-            grid.addView(createAppTile(menuApps.get(index)),
-                    createTileParams());
-        }
-        final LinearLayout.LayoutParams gridParams =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT, 0, 1);
-        gridParams.setMargins(0, dp(12), 0, dp(8));
-        final ScrollView scroll = new ScrollView(mActivity);
-        scroll.addView(grid, new ScrollView.LayoutParams(
-                ScrollView.LayoutParams.MATCH_PARENT, ScrollView.LayoutParams.WRAP_CONTENT));
-        mBody.addView(scroll, gridParams);
-        addPager(pageCount);
     }
 
-    private Button createTab(final int textResId, final int mode) {
-        final Button button = mUi.actionButton(
-                textResId,
-                tabSelected(mode)
-                        ? DesktopUiFactory.COLOR_CYAN
-                        : DesktopUiFactory.COLOR_PANEL_ALT);
-        button.setTextSize(11);
-        button.setMinWidth(0);
-        button.setMinimumWidth(0);
-        button.setPadding(
-                dp(4),
-                button.getPaddingTop(),
-                dp(4),
-                button.getPaddingBottom());
-        button.setOnClickListener(view -> {
+    private void rememberGridScroll() {
+        if (mGrid != null && mGrid.isAttachedToWindow()) {
+            mGridFirstPosition = mGrid.getFirstVisiblePosition();
+        }
+        mGrid = null;
+    }
+
+    private void addTab(final LinearLayout tabs, final int textResId, final int mode) {
+        final LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT, dp(32));
+        params.setMarginEnd(dp(8));
+        tabs.addView(createTab(textResId, mode), params);
+    }
+
+    /** Material filter chip for a Start section. */
+    private TextView createTab(final int textResId, final int mode) {
+        final boolean selected = tabSelected(mode);
+        final TextView chip = new TextView(mActivity);
+        chip.setText(textResId);
+        chip.setTextSize(13);
+        chip.setTypeface(DesktopUiFactory.medium());
+        chip.setGravity(Gravity.CENTER);
+        chip.setPadding(dp(14), 0, dp(14), 0);
+        chip.setClickable(true);
+        chip.setFocusable(true);
+        chip.setDefaultFocusHighlightEnabled(false);
+        final int radius = dp(DesktopUiFactory.SHAPE_FULL_DP);
+        // Material filter chips: the selected chip is the secondary container.
+        final int fill = selected
+                ? DesktopUiFactory.COLOR_SECONDARY_CONTAINER : Color.TRANSPARENT;
+        final int outline = selected
+                ? fill : DesktopUiFactory.COLOR_OUTLINE_VARIANT;
+        chip.setTextColor(selected
+                ? DesktopUiFactory.COLOR_ON_SECONDARY_CONTAINER : DesktopUiFactory.COLOR_MUTED);
+        final StateListDrawable background = new StateListDrawable();
+        background.addState(new int[] {android.R.attr.state_focused},
+                mUi.rounded(fill, radius, mOnSurface));
+        background.addState(new int[] {android.R.attr.state_pressed},
+                mUi.rounded(DesktopUiFactory.withAlpha(mOnSurface, 0.3f), radius, outline));
+        background.addState(new int[] {android.R.attr.state_hovered},
+                mUi.rounded(DesktopUiFactory.withAlpha(mOnSurface, selected ? 0.28f : 0.1f),
+                        radius, outline));
+        background.addState(new int[0], mUi.rounded(fill, radius, outline));
+        chip.setBackground(background);
+        chip.setOnClickListener(view -> {
             mMode = mode;
-            mPage = 0;
+            mGridFirstPosition = 0;
             if (isUtilityMode(mode)) {
                 mSearchQuery = "";
                 if (mSearch != null && mSearch.length() > 0) {
@@ -499,11 +579,11 @@ final class StartMenuContent {
             mHost.onSectionShown(mode);
         });
         mHost.automation().register(
-                button,
+                chip,
                 "start.tab." + modeName(mode),
                 "tab",
-                button.getText());
-        return button;
+                chip.getText());
+        return chip;
     }
 
     private void addTools() {
@@ -547,28 +627,59 @@ final class StartMenuContent {
     }
 
     private StateListDrawable entryBackground(final int radius) {
+        // Material drawer entries are unboxed; only selection and keyboard
+        // focus draw an outline, so every state keeps the same geometry.
         final StateListDrawable background = new StateListDrawable();
         for (final int state : new int[] {android.R.attr.state_selected, android.R.attr.state_focused}) {
             background.addState(new int[] {state}, mUi.rounded(
-                    DesktopUiFactory.COLOR_PANEL_ALT, dp(radius), DesktopUiFactory.COLOR_AMBER));
+                    DesktopUiFactory.COLOR_SECONDARY_CONTAINER, dp(radius), DesktopUiFactory.COLOR_ACCENT));
         }
+        final int pressed = DesktopUiFactory.withAlpha(DesktopUiFactory.COLOR_TEXT, 0.18f);
         background.addState(new int[] {android.R.attr.state_pressed}, mUi.rounded(
-                DesktopUiFactory.COLOR_PANEL_FOCUS, dp(radius), DesktopUiFactory.COLOR_PANEL_FOCUS));
+                pressed, dp(radius), pressed));
+        final int hovered = DesktopUiFactory.withAlpha(DesktopUiFactory.COLOR_TEXT, 0.08f);
+        background.addState(new int[] {android.R.attr.state_hovered}, mUi.rounded(
+                hovered, dp(radius), hovered));
         background.addState(new int[0], mUi.rounded(
-                DesktopUiFactory.COLOR_PANEL_ALT, dp(radius), DesktopUiFactory.COLOR_PANEL_ALT));
+                Color.TRANSPARENT, dp(radius), Color.TRANSPARENT));
         return background;
     }
 
     private View createAppTile(final StartMenuEntry application) {
-        final AppItem app = application.app;
         final LinearLayout tile = new LinearLayout(mActivity);
         tile.setOrientation(LinearLayout.VERTICAL);
-        tile.setGravity(Gravity.CENTER);
-        tile.setPadding(dp(6), dp(5), dp(6), dp(5));
+        tile.setGravity(Gravity.CENTER_HORIZONTAL);
+        tile.setPadding(dp(4), dp(10), dp(4), dp(8));
         tile.setBackground(entryBackground(12));
         tile.setClickable(true);
         tile.setFocusable(true);
+        tile.setTag(TILE_TAG);
+
+        final ImageView icon = new ImageView(mActivity);
+        tile.addView(icon, new LinearLayout.LayoutParams(dp(52), dp(52)));
+
+        final TextView label = new TextView(mActivity);
+        label.setTextColor(mOnSurface);
+        label.setTextSize(12);
+        label.setGravity(Gravity.CENTER);
+        label.setMaxLines(1);
+        label.setEllipsize(TextUtils.TruncateAt.END);
+        final LinearLayout.LayoutParams labelParams =
+                new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,
+                        LinearLayout.LayoutParams.WRAP_CONTENT);
+        labelParams.setMargins(0, dp(8), 0, 0);
+        tile.addView(label, labelParams);
+        bindAppTile(tile, application);
+        return tile;
+    }
+
+    /** Binds a new or recycled tile to one entry. */
+    private void bindAppTile(final LinearLayout tile, final StartMenuEntry application) {
+        final AppItem app = application.app;
         tile.setOnClickListener(view -> mHost.open(application));
+        tile.setOnLongClickListener(null);
+        tile.setOnContextClickListener(null);
         bindContextMenu(tile, application);
         mHost.automation().register(
                 tile,
@@ -579,87 +690,11 @@ final class StartMenuContent {
                 application.label,
                 app == null ? "" : app.packageName,
                 application.task == null ? -1 : application.task.taskId);
-
-        final ImageView icon = new ImageView(mActivity);
-        bindIcon(icon, application);
-        tile.addView(icon, new LinearLayout.LayoutParams(dp(44), dp(44)));
-
-        final TextView label = new TextView(mActivity);
-        label.setText(application.label);
+        bindIcon((ImageView) tile.getChildAt(0), application);
+        ((TextView) tile.getChildAt(1)).setText(application.label);
         tile.setContentDescription(application.label + ", " + application.detail);
-        label.setTextColor(DesktopUiFactory.COLOR_TEXT);
-        label.setTextSize(11);
-        label.setGravity(Gravity.CENTER);
-        label.setMaxLines(1);
-        label.setEllipsize(TextUtils.TruncateAt.END);
-        final LinearLayout.LayoutParams labelParams =
-                new LinearLayout.LayoutParams(
-                        LinearLayout.LayoutParams.MATCH_PARENT,
-                        LinearLayout.LayoutParams.WRAP_CONTENT);
-        labelParams.setMargins(0, dp(4), 0, 0);
-        tile.addView(label, labelParams);
-        return tile;
     }
 
-    private GridLayout.LayoutParams createTileParams() {
-        final GridLayout.LayoutParams params = new GridLayout.LayoutParams();
-        params.width = 0;
-        params.height = dp(104);
-        params.columnSpec = GridLayout.spec(GridLayout.UNDEFINED, 1f);
-        params.setMargins(dp(4), dp(4), dp(4), dp(4));
-        return params;
-    }
-
-    private void addPager(final int pageCount) {
-        final LinearLayout pager = new LinearLayout(mActivity);
-        pager.setOrientation(LinearLayout.HORIZONTAL);
-        pager.setGravity(Gravity.CENTER_VERTICAL);
-
-        final Button previous = mUi.actionButton(
-                R.string.action_previous,
-                DesktopUiFactory.COLOR_PANEL_ALT);
-        previous.setEnabled(mPage > 0);
-        previous.setOnClickListener(view -> {
-            if (mPage > 0) {
-                mPage--;
-                renderBody();
-            }
-        });
-        mHost.automation().register(
-                previous, "start.page.previous", "button",
-                previous.getText());
-        pager.addView(previous, new LinearLayout.LayoutParams(
-                dp(108), LinearLayout.LayoutParams.WRAP_CONTENT));
-
-        final TextView page = new TextView(mActivity);
-        page.setText(mActivity.getString(
-                R.string.page_status,
-                Integer.valueOf(mPage + 1),
-                Integer.valueOf(pageCount)));
-        page.setTextColor(DesktopUiFactory.COLOR_MUTED);
-        page.setTextSize(13);
-        page.setGravity(Gravity.CENTER);
-        pager.addView(page, new LinearLayout.LayoutParams(
-                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
-
-        final Button next = mUi.actionButton(
-                R.string.action_next,
-                DesktopUiFactory.COLOR_PANEL_ALT);
-        next.setEnabled(mPage + 1 < pageCount);
-        next.setOnClickListener(view -> {
-            if (mPage + 1 < pageCount) {
-                mPage++;
-                renderBody();
-            }
-        });
-        mHost.automation().register(
-                next, "start.page.next", "button", next.getText());
-        pager.addView(next, new LinearLayout.LayoutParams(
-                dp(108), LinearLayout.LayoutParams.WRAP_CONTENT));
-        mBody.addView(pager, new LinearLayout.LayoutParams(
-                LinearLayout.LayoutParams.MATCH_PARENT,
-                LinearLayout.LayoutParams.WRAP_CONTENT));
-    }
 
     private void renderSearchResults() {
         final List<StartMenuEntry> matches =
@@ -667,7 +702,7 @@ final class StartMenuContent {
         if (matches.isEmpty()) {
             final TextView empty = new TextView(mActivity);
             empty.setText(R.string.search_no_results);
-            empty.setTextColor(DesktopUiFactory.COLOR_MUTED);
+            empty.setTextColor(DesktopUiFactory.withAlpha(mOnSurface, 0.75f));
             empty.setTextSize(14);
             empty.setGravity(Gravity.CENTER);
             mBody.addView(empty, new LinearLayout.LayoutParams(
@@ -785,14 +820,14 @@ final class StartMenuContent {
         labels.setPadding(dp(10), 0, 0, 0);
         final TextView name = new TextView(mActivity);
         name.setText(result.label);
-        name.setTextColor(DesktopUiFactory.COLOR_TEXT);
+        name.setTextColor(mOnSurface);
         name.setTextSize(14);
         name.setSingleLine(true);
         name.setEllipsize(TextUtils.TruncateAt.END);
         final TextView detail = new TextView(mActivity);
         detail.setText(result.detail);
-        detail.setTextColor(DesktopUiFactory.COLOR_MUTED);
-        detail.setTextSize(10);
+        detail.setTextColor(DesktopUiFactory.withAlpha(mOnSurface, 0.7f));
+        detail.setTextSize(11);
         detail.setSingleLine(true);
         detail.setEllipsize(TextUtils.TruncateAt.MIDDLE);
         labels.addView(name);
@@ -905,7 +940,7 @@ final class StartMenuContent {
     }
 
     private int getSearchResultLimit() {
-        return Math.max(4, getRowCount() * 3);
+        return SEARCH_RESULT_LIMIT;
     }
 
     private void onSearchResultsChanged() {
@@ -916,14 +951,6 @@ final class StartMenuContent {
 
     private int getColumnCount() {
         return mColumns;
-    }
-
-    private int getPageSize() {
-        return getColumnCount() * getRowCount();
-    }
-
-    private int getRowCount() {
-        return mRows;
     }
 
     private int dp(final int value) {

@@ -31,14 +31,9 @@ final class DesktopItemViewFactory {
         return item;
     }
 
-    View file(final DesktopFile file, final boolean selected) {
+    /** Selection is the view's activated state; see {@link #iconContainer()}. */
+    View file(final DesktopFile file) {
         final LinearLayout item = iconContainer();
-        if (selected) {
-            item.setBackground(mUi.rounded(
-                    0x661F2C3A,
-                    dp(8),
-                    DesktopUiFactory.COLOR_CYAN));
-        }
         final ImageView icon = new ImageView(mActivity);
         icon.setScaleType(file.thumbnail == null
                 ? ImageView.ScaleType.CENTER_INSIDE
@@ -60,20 +55,48 @@ final class DesktopItemViewFactory {
             icon.setImageResource(R.drawable.ic_desktop_web_link);
         } else if (file.thumbnail != null) {
             icon.setImageBitmap(file.thumbnail);
-            icon.setBackground(mUi.rounded(
-                    0x66111827,
-                    dp(6),
-                    0x99E5E7EB));
+            icon.setBackground(DesktopUiFactory.filled(
+                    DesktopUiFactory.COLOR_PANEL_ALT, dp(DesktopUiFactory.SHAPE_SMALL_DP)));
             icon.setClipToOutline(true);
-            icon.setPadding(dp(1), dp(1), dp(1), dp(1));
         } else {
             icon.setImageResource(FileIconResolver.forFile(
                     file.directory, file.mimeType));
         }
         icon.setContentDescription(file.displayName());
-        item.addView(icon, iconParams());
+        if (file.thumbnail != null && MediaThumbnails.isVideo(file.mimeType)) {
+            item.addView(withPlayBadge(icon), iconParams());
+        } else {
+            item.addView(icon, iconParams());
+        }
         addLabel(item, file.displayName());
         return item;
+    }
+
+    /** Marks a video preview with a small play badge. */
+    private View withPlayBadge(final ImageView preview) {
+        final android.widget.FrameLayout frame = new android.widget.FrameLayout(mActivity);
+        frame.addView(preview, new android.widget.FrameLayout.LayoutParams(
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT,
+                android.widget.FrameLayout.LayoutParams.MATCH_PARENT));
+        frame.addView(playBadge(mActivity, mUi, desktopDp(18, 14)),
+                new android.widget.FrameLayout.LayoutParams(
+                        desktopDp(18, 14), desktopDp(18, 14), Gravity.CENTER));
+        return frame;
+    }
+
+    /** Round translucent play badge shared by desktop and file previews. */
+    static ImageView playBadge(
+            final android.content.Context context,
+            final DesktopUiFactory ui,
+            final int size) {
+        final ImageView badge = new ImageView(context);
+        badge.setImageResource(R.drawable.ic_play);
+        badge.setImageTintList(android.content.res.ColorStateList.valueOf(0xFFFFFFFF));
+        badge.setBackground(DesktopUiFactory.filled(0x99000000, size));
+        final int padding = Math.max(1, size / 5);
+        badge.setPadding(padding, padding, padding, padding);
+        badge.setImportantForAccessibility(View.IMPORTANT_FOR_ACCESSIBILITY_NO);
+        return badge;
     }
 
     View overflow(final int hiddenCount) {
@@ -97,7 +120,32 @@ final class DesktopItemViewFactory {
                 desktopDp(6, 4));
         item.setClickable(true);
         item.setFocusable(true);
+        item.setDefaultFocusHighlightEnabled(false);
+        item.setBackground(selectionBackground());
         return item;
+    }
+
+    /** Material selection: a tonal fill for selected items, hover state layers. */
+    private android.graphics.drawable.StateListDrawable selectionBackground() {
+        final int radius = dp(DesktopUiFactory.SHAPE_MEDIUM_DP);
+        final int selected = DesktopUiFactory.withAlpha(DesktopUiFactory.COLOR_ACCENT, 0.28f);
+        final android.graphics.drawable.StateListDrawable background =
+                new android.graphics.drawable.StateListDrawable();
+        background.addState(new int[] {android.R.attr.state_activated},
+                mUi.rounded(selected, radius, DesktopUiFactory.withAlpha(
+                        DesktopUiFactory.COLOR_ACCENT, 0.7f)));
+        background.addState(new int[] {android.R.attr.state_focused},
+                mUi.rounded(DesktopUiFactory.withAlpha(DesktopUiFactory.COLOR_TEXT, 0.12f),
+                        radius, DesktopUiFactory.COLOR_ACCENT));
+        background.addState(new int[] {android.R.attr.state_pressed},
+                DesktopUiFactory.filled(DesktopUiFactory.withAlpha(
+                        DesktopUiFactory.COLOR_TEXT, 0.18f), radius));
+        background.addState(new int[] {android.R.attr.state_hovered},
+                DesktopUiFactory.filled(DesktopUiFactory.withAlpha(
+                        DesktopUiFactory.COLOR_TEXT, 0.12f), radius));
+        background.addState(new int[0],
+                DesktopUiFactory.filled(android.graphics.Color.TRANSPARENT, radius));
+        return background;
     }
 
     private LinearLayout.LayoutParams iconParams() {

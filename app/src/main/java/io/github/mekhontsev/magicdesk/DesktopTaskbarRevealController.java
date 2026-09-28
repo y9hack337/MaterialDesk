@@ -205,7 +205,9 @@ final class DesktopTaskbarRevealController {
     private void applyPresentation() {
         mActivity.shellPresentation().update(resolveShellLayers(
                 mAvailable, mPolicyVisible, mAutomaticHold,
-                mPointerState.isRevealed(), isExplicitlyRevealed()));
+                mPointerState.isRevealed(),
+                isExplicitlyRevealed() || (pointerEdgeOverIndependentTask()
+                        && mPointerState.isRevealed())));
         final TaskbarController taskbar = mActivity.taskbar();
         final DesktopTaskbarHost taskbarHost = mActivity.taskbarHost();
         if (taskbar == null || taskbarHost == null) {
@@ -243,8 +245,22 @@ final class DesktopTaskbarRevealController {
     }
 
     private Presentation currentPresentation() {
+        if (pointerEdgeOverIndependentTask() && !isExplicitlyRevealed()) {
+            // Resting the pointer on the edge is an explicit user reveal.
+            return mPointerState.isRevealed() ? Presentation.VISIBLE : Presentation.EDGE;
+        }
         return resolvePresentation(mAvailable, mPolicyVisible, mAutoHide, mAutomaticHold,
                 mPointerState.isRevealed(), isExplicitlyRevealed());
+    }
+
+    /**
+     * An independent fullscreen task suppresses automatic chrome. External
+     * displays still keep the one-pixel pointer edge, which covers no usable
+     * content, so the taskbar remains reachable; the phone's taller touch
+     * edge is not kept over another application.
+     */
+    private boolean pointerEdgeOverIndependentTask() {
+        return !mAvailable && !mTouchEdgeEnabled;
     }
 
     static Set<ShellSurface.Layer> resolveShellLayers(boolean available, boolean policyVisible,
@@ -280,7 +296,8 @@ final class DesktopTaskbarRevealController {
         final boolean armed = resolvePresentation(
                 mAvailable, mPolicyVisible, mAutoHide, mAutomaticHold,
                 false, mInteractionHold) == Presentation.EDGE;
-        mPointerState.setArmed(armed);
+        mPointerState.setArmed(armed
+                || (pointerEdgeOverIndependentTask() && !mInteractionHold));
         // A navigation reveal lasts until user input, across HOME visibility changes.
         mTouchState.setArmed(mTouchEdgeEnabled && armed);
     }

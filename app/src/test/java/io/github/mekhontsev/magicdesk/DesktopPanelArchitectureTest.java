@@ -161,6 +161,13 @@ public final class DesktopPanelArchitectureTest {
         assertTrue(controller.contains("|| mDialogFactory != null"));
         assertTrue(controller.contains("if (!updateHostFocus())"));
         assertTrue(controller.contains("mFocusGate.reset()"));
+        // A pending focus acknowledgement must not keep a panel off screen.
+        final String attach = controller.substring(
+                controller.indexOf("private boolean attachRequestedWindows()"),
+                controller.indexOf("private boolean updateHostFocus()"));
+        assertTrue(attach.indexOf("addVisiblePanel()") < attach.indexOf("if (!updateHostFocus())"));
+        assertTrue(attach.indexOf("if (!updateHostFocus())") < attach.indexOf("applyKeyboard(true)"));
+        assertTrue(attach.indexOf("if (!updateHostFocus())") < attach.indexOf("createDialog()"));
     }
 
     @Test

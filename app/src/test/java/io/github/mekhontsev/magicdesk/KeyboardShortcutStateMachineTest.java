@@ -6,6 +6,29 @@ import static org.junit.Assert.*;
 import static io.github.mekhontsev.magicdesk.KeyboardShortcutStateMachine.Action.*;
 
 public final class KeyboardShortcutStateMachineTest {
+    @Test public void windowsLauncherShortcutsMapToDesktopActions() {
+        final KeyboardShortcutStateMachine s = new KeyboardShortcutStateMachine();
+        assertEquals(TASK_VIEW, s.accept(KeyEvent.KEYCODE_TAB, true, 0,
+                false, false, false, true).action);
+        assertEquals(FILES, s.accept(KeyEvent.KEYCODE_E, true, 0,
+                false, false, false, true).action);
+        assertEquals(SEARCH, s.accept(KeyEvent.KEYCODE_S, true, 0,
+                false, false, false, true).action);
+        assertEquals(RUN, s.accept(KeyEvent.KEYCODE_R, true, 0,
+                false, false, false, true).action);
+        assertEquals(TASK_MANAGER, s.accept(KeyEvent.KEYCODE_ESCAPE, true, 0,
+                true, false, true, false).action);
+        assertTrue(s.accept(KeyEvent.KEYCODE_ESCAPE, false, 0,
+                true, false, true, false).consumed);
+        assertEquals(DISMISS, s.accept(KeyEvent.KEYCODE_ESCAPE, true, 0,
+                false, false, false, false).action);
+        assertEquals(REGION_SCREENSHOT, new KeyboardShortcutStateMachine().accept(
+                KeyEvent.KEYCODE_S, true, 0, false, false, true, true).action);
+        // Win+Tab does not change Alt+Tab.
+        assertEquals(ALT_TAB_FORWARD, new KeyboardShortcutStateMachine().accept(
+                KeyEvent.KEYCODE_TAB, true, 0, false, true, false, false).action);
+    }
+
     @Test public void heldMetaWalksFromCornerThroughHalfToOppositeCorner() {
         final KeyboardShortcutStateMachine s = new KeyboardShortcutStateMachine();
         assertEquals("SNAP_LEFT", metaArrow(s, KeyEvent.KEYCODE_DPAD_LEFT));

@@ -15,7 +15,7 @@ does not change task ownership or these workspace bindings; see
 
 ## System HOME Instances
 
-The shared HOME lease also selects MagicDesk's `SECONDARY_HOME` handler for its
+The shared HOME lease also selects MaterialDesk's `SECONDARY_HOME` handler for its
 first workspace. The last release restores the captured handler, or Android's
 configured system secondary launcher when necessary, before disabling HOME
 components. Preferred-handler selection does not change the display targeted
@@ -24,7 +24,7 @@ by a system launch; display routing remains a separate launch boundary.
 While an external workspace is configured, `ShellSecondaryHomeStartPolicy`
 rejects unaddressed `MAIN`/`SECONDARY_HOME` selectors in the shared
 `IActivityController`, before Android can reorder the phone's HOME root.
-A resolved MagicDesk component does not exempt an implicit selector. Android's
+A resolved MaterialDesk component does not exempt an implicit selector. Android's
 package-addressed per-area HOME starts, primary HOME, and explicit Desktop host
 launches remain available. The callback has no launch-display options; it must
 not guess a destination or redirect the request. Each observer releases only
@@ -90,7 +90,7 @@ explicit failure; UI callers do not bypass fullscreen ownership through a raw
 the semantic gateway.
 
 Native caption actions can leave a desktop-owned task fullscreen in the
-standard workspace before any MagicDesk command acquires an ordering plane.
+standard workspace before any MaterialDesk command acquires an ordering plane.
 The existing mode-change observer passes this event to the plane owner. Native
 adoption waits at the framework transition barrier, rechecks the live task,
 and replaces its root with an owned plane at the same workspace position.
@@ -202,7 +202,7 @@ Focusability controls Android Activity resume eligibility, not the selected
 keyboard target; the foreground freeform task still owns input. Covered
 fullscreen peers, idle slots and planes concealed by desktop presentation remain
 non-focusable. Native caption minimize/close can therefore return to the exposed
-application without an additional MagicDesk activation command.
+application without an additional MaterialDesk activation command.
 
 The same topology is used on phone, simulated, wired, and wireless targets.
 `PhoneHomeActivity` remains primary HOME in Android's default task area;
@@ -264,7 +264,10 @@ system-bar inset. It paints that portion with the taskbar background, while the
 taskbar controls remain above the inset. When managed fullscreen policy conceals
 the taskbar, the child window collapses to its reveal edge with a transparent
 background; its window opacity and input handling remain unchanged. An unrelated
-foreground fullscreen task suppresses its automatic presentation. Phone Home
+foreground fullscreen task suppresses its automatic presentation. On an
+external display the one-pixel pointer edge stays armed over that task, and
+resting the pointer on it is an explicit reveal; the phone's taller touch edge
+is not kept over another application. Phone Home
 can explicitly reveal it without changing that task's focus or ownership;
 outside touch or a taskbar action releases the transient reveal. An open Start
 or another panel independently holds the taskbar visible until it closes.
@@ -391,7 +394,7 @@ an explicit user disable remains effective for subsequent sessions.
 ## Native Caption Maximize
 
 WMShell's native maximize/restore toggle compares task bounds with its own
-display stable bounds. MagicDesk's taskbar-aware bounds correction does not
+display stable bounds. MaterialDesk's taskbar-aware bounds correction does not
 update that native notion of maximization. On RM11 Android 16 HDMI, a native
 double-click expands a 1920x1016 freeform task to 1920x1080, then our correction
 returns it to 1920x1016. The next double-click maximizes again instead of
@@ -419,7 +422,7 @@ only include navigation-bar insets when `hasNavigationBar` is true. That check
 uses display flags and the global force-desktop setting for external displays,
 not simply the presence of an inset provider. A native work-area provider would
 also need to account for ordinary resize, taskbar visibility and fullscreen.
-MagicDesk uses the geometry adaptation above without publishing synthetic
+MaterialDesk uses the geometry adaptation above without publishing synthetic
 navigation-bar insets or enabling system Desktop.
 
 ## Submission Constraints
@@ -461,7 +464,7 @@ freeform launch starts behind the desktop host so its framework default state
 is never exposed. Once the task ID is known, one complete WMShell `OPEN`
 establishes mode, bounds, and front order. No raw opening token crosses that
 launch boundary. This avoids a
-race where the framework finishes its launch transition before MagicDesk tries
+race where the framework finishes its launch transition before MaterialDesk tries
 to append another transaction.
 
 Application presentation uses the same WCT owner. Every surface-producing or
@@ -475,7 +478,7 @@ owned overrides to inherit, so presentation state cannot leak into ordinary
 phone use.
 
 A live task entering an independent fullscreen plane is a surface-producing
-boundary: MagicDesk first prepares the plane order, then uses
+boundary: MaterialDesk first prepares the plane order, then uses
 ActivityTaskManager's `moveTaskToFront` with fullscreen launch options and the
 target task display area. Android creates the recognized transition and
 WMShell receives the task leash; the Activity instance is preserved. This is
@@ -483,7 +486,7 @@ required on Nubia firmware, where a direct WCT updates an organized task's
 logical fullscreen bounds but deliberately leaves its old freeform surface
 crop in place.
 
-A cold fullscreen launch has no existing surface to migrate. MagicDesk reserves
+A cold fullscreen launch has no existing surface to migrate. MaterialDesk reserves
 an anchored plane before starting the Activity and passes that plane through
 `ActivityOptions.setLaunchTaskDisplayArea` together with fullscreen mode and
 `ACTIVITY_TYPE_STANDARD`. The first task callback therefore exposes the final
@@ -503,7 +506,7 @@ WMShell must rebuild the task leash, native caption, and caption input window.
 Freeform selection uses the same submission boundary with an ordering-only WCT;
 it does not hide or reveal tasks through `setHidden`.
 
-MagicDesk currently starts this narrow class of transitions directly in
+MaterialDesk currently starts this narrow class of transitions directly in
 WMCore through `WindowOrganizer.startNewTransition`. Because the call does not
 pass through the in-process WMShell `Transitions.startTransition` wrapper, its
 token is not present in SystemUI's local pending-transition registry. Current
@@ -546,7 +549,7 @@ separate coverage.
 `DisplayInputSession` releases input-location associations before production
 display removal. Physical composite devices retain their identities and regain
 their previous routes while the desktop viewport still exists. This ordering
-avoids a MagicDesk-created removal trigger, not the underlying framework
+avoids a MaterialDesk-created removal trigger, not the underlying framework
 defect: abrupt physical disconnect can still precede cleanup. Keep the
 new-residue assertion and the abrupt-removal scenario intact.
 

@@ -162,14 +162,19 @@ final class DesktopAudioPanelController {
             mActivity.registerAutomationUiElement(mMute, "quick_controls.mute", "button", action);
         }
         if (mVolumeValue != null) {
+            // Firmware volume steps vary (OxygenOS uses 160); show a percentage.
             mVolumeValue.setText(mActivity.getString(R.string.audio_volume_value,
-                    volume, mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC)));
+                    percent(volume, mAudioManager.getStreamMaxVolume(AudioManager.STREAM_MUSIC))));
         }
         if (mRouteStatus != null) {
             mRouteStatus.setText(mActivity.getString(
                     R.string.audio_status,
                     currentOutputName()));
         }
+    }
+
+    static int percent(final int value, final int maximum) {
+        return maximum <= 0 ? 0 : Math.round(Math.max(0, Math.min(value, maximum)) * 100.0f / maximum);
     }
 
     private void toggleMute() {

@@ -62,23 +62,30 @@ final class FileClipboardInterop {
         return FileOperationClipboard.snapshot();
     }
 
-    static synchronized FileOperationClipboard.Snapshot storeDesktopFile(
+    /** Stores desktop files; {@code absolutePaths} matches {@code files} by index. */
+    static synchronized FileOperationClipboard.Snapshot storeDesktopFiles(
             final Context context,
-            final DesktopFile file,
-            final String absolutePath,
+            final List<DesktopFile> files,
+            final List<String> absolutePaths,
             final FileOperationClipboard.Mode mode) {
         final FileOperationClipboard.Snapshot previous =
                 FileOperationClipboard.snapshot();
         final FileOperationClipboard.Snapshot stored =
-                FileOperationClipboard.set(List.of(absolutePath), mode);
+                FileOperationClipboard.set(List.copyOf(absolutePaths), mode);
         boolean published = false;
-        if (!file.directory) {
+        // Android receives the same items only when every item is a file;
+        // a partial clip would paste fewer items in another application.
+        final List<AndroidContentPayload.UriItem> uris = new java.util.ArrayList<>();
+        for (final DesktopFile file : files) {
+            if (file.directory) {
+                uris.clear();
+                break;
+            }
+            uris.add(new AndroidContentPayload.UriItem(file.uri, file.mimeType));
+        }
+        if (!uris.isEmpty()) {
             try {
-                published = publish(
-                        context,
-                        List.of(new AndroidContentPayload.UriItem(
-                                file.uri, file.mimeType)),
-                        stored);
+                published = publish(context, uris, stored);
             } catch (RuntimeException ignored) {
                 // Android interop is additive; internal copy/move still works.
             }

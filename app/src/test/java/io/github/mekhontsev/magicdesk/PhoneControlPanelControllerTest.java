@@ -118,7 +118,7 @@ public final class PhoneControlPanelControllerTest {
         final String button = RuntimeSourceFixture.methods("PhoneControlPanelController", "integrationButton");
         assertTrue(button.contains("setSingleLine(false)"));
         assertTrue(button.contains("setEllipsize(null)"));
-        assertTrue(button.contains("setTextColor(COLOR_CYAN)"));
+        assertTrue(button.contains("setTextColor(COLOR_ACCENT)"));
         assertTrue(button.contains("Paint.UNDERLINE_TEXT_FLAG"));
         assertFalse(button.contains("controlAction"));
         assertTrue(RuntimeSourceFixture.methods("ControlActivity", "onRequestPermissionsResult")

@@ -83,6 +83,7 @@ public abstract class DesktopShellActivity extends Activity
     private TaskOverviewController mTaskOverviewController;
     private DesktopContextMenuController mContextMenuController;
     private TaskbarController mTaskbarController;
+    private RegionScreenshotController mRegionScreenshot;
     private DesktopTaskbarHost mTaskbarHost;
     private DesktopTaskbarRevealController mTaskbarRevealController;
     private ShellPresentationScope mShellPresentation;
@@ -1056,6 +1057,17 @@ public abstract class DesktopShellActivity extends Activity
                 });
         root.setOnTouchListener((view, event) -> {
             if (mInputController.handleTouchEvent(event, true)) return true;
+            final boolean wasSelecting = mDesktopWorkspaceController.isSelecting();
+            if (mDesktopWorkspaceController.handleSelectionTouch(event)) {
+                if (!wasSelecting) {
+                    // The drag became a marquee: tap and long press no longer apply.
+                    final MotionEvent cancel = MotionEvent.obtain(event);
+                    cancel.setAction(MotionEvent.ACTION_CANCEL);
+                    desktopGestures.onTouchEvent(cancel);
+                    cancel.recycle();
+                }
+                return true;
+            }
             final boolean handled = desktopGestures.onTouchEvent(event);
             if (event.getActionMasked() == MotionEvent.ACTION_CANCEL) {
                 hideAllPanels();
@@ -1311,7 +1323,8 @@ public abstract class DesktopShellActivity extends Activity
     }
 
     void copyDesktopFile(final DesktopFile file, final boolean move) {
-        mDesktopWorkspaceController.copyFile(file, move);
+        mDesktopWorkspaceController.copyFiles(
+                mDesktopWorkspaceController.operationTargets(file), move);
     }
 
     void pasteDesktopFiles() {
@@ -1447,6 +1460,31 @@ public abstract class DesktopShellActivity extends Activity
     }
 
     void confirmDeleteDesktopFile(final DesktopFile file) {
+        confirmDeleteDesktopFiles(mDesktopWorkspaceController.operationTargets(file));
+    }
+
+    void confirmDeleteDesktopFiles(final List<DesktopFile> files) {
+        if (files.isEmpty()) {
+            return;
+        }
+        if (files.size() > 1) {
+            showDesktopDialog(host -> new AlertDialog.Builder(host)
+                    .setTitle(R.string.delete_desktop_entry_title)
+                    .setMessage(getResources().getQuantityString(
+                            R.plurals.delete_desktop_items_message,
+                            files.size(), Integer.valueOf(files.size())))
+                    .setNegativeButton(android.R.string.cancel, null)
+                    .setPositiveButton(
+                            R.string.action_delete,
+                            (confirmedDialog, which) -> {
+                                for (final DesktopFile file : files) {
+                                    mDesktopWorkspaceController.deleteFile(file);
+                                }
+                            })
+                    .create());
+            return;
+        }
+        final DesktopFile file = files.get(0);
         showDesktopDialog(host -> new AlertDialog.Builder(host)
                 .setTitle(R.string.delete_desktop_entry_title)
                 .setMessage(getString(
@@ -1803,6 +1841,14 @@ public abstract class DesktopShellActivity extends Activity
 
     void toggleStartMenu() {
         mStartMenuController.toggle();
+    }
+
+    /** Snipping-tool screenshot of this desktop's display. */
+    void startRegionScreenshot() {
+        if (mRegionScreenshot == null) {
+            mRegionScreenshot = new RegionScreenshotController(this, mUi);
+        }
+        mRegionScreenshot.start();
     }
 
     void showStartFromRuntime() {

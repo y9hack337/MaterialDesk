@@ -1,6 +1,6 @@
 # Desktop Entry Files
 
-MagicDesk reads `.desktop` files from `/storage/emulated/0/Desktop` and from
+MaterialDesk reads `.desktop` files from `/storage/emulated/0/Desktop` and from
 directories opened in built-in Files. It supports a bounded subset of the
 [freedesktop Desktop Entry specification](https://specifications.freedesktop.org/desktop-entry/latest/)
 for folder links, web links, Android applications, Android-shell commands, and
@@ -41,7 +41,7 @@ account is created and no password is stored in the launcher.
 
 Termux Linux entries are saved in the selected Termux environment's
 `${XDG_DATA_HOME:-$HOME/.local/share}/applications/magicdesk-NAME.desktop`,
-so the editor and shared launch services need Termux integration, not MagicDesk's
+so the editor and shared launch services need Termux integration, not MaterialDesk's
 shell/root service or Desktop. A custom chroot script may separately require
 root authorization for its own setup and entry. Shell Linux entries are saved
 as ordinary Desktop files, without Termux. Graphical Shell entries additionally
@@ -66,7 +66,7 @@ at `/tmp/magicdesk-wayland` and supplies an absolute guest `WAYLAND_DISPLAY`.
 Each graphical launch gets its own D-Bus session
 and temporary `XDG_RUNTIME_DIR`. This is not a security sandbox. Arbitrary
 Android file arguments are not mapped into the guest; the editor hides file
-associations for these recipes. MagicDesk does not install distributions or scan guest apps.
+associations for these recipes. MaterialDesk does not install distributions or scan guest apps.
 
 ### Custom Linux Entry Scripts
 
@@ -81,7 +81,7 @@ shell service UID and receives:
 Options are omitted when their fields are empty. A terminal with no command
 omits `-- PROGRAM ARG...`; the script should enter the guest's login shell.
 Otherwise, run the supplied argv inside the guest without reparsing or joining
-it as shell text. MagicDesk supplies `/bin/sh -lc` and the requested guest
+it as shell text. MaterialDesk supplies `/bin/sh -lc` and the requested guest
 command; graphical launches wrap it in `/tmp/magicdesk-guest-files --` and
 additionally own a D-Bus session and a temporary guest runtime directory,
 just as with PRoot.
@@ -100,7 +100,7 @@ after selecting the guest user. The helper reads exported files with the same
 credentials as the application; imports use the session's shared content
 directory. The Linux editor emits `X-MagicDesk-FileEnvironment`, an explicit
 environment/user identity retained in Recent and used to isolate launch correlation.
-This is a MagicDesk desktop-entry extension, not a freedesktop standard key.
+This is a MaterialDesk desktop-entry extension, not a freedesktop standard key.
 
 Wayland scripts inherit `WAYLAND_DISPLAY` and `MAGICDESK_WAYLAND_RUNTIME` and
 must expose the corresponding socket at the absolute guest `WAYLAND_DISPLAY`.
@@ -109,12 +109,12 @@ executor's [Wayland broker](wayland.md#root-guest-connections). UID-2000 shell
 clients retain the single-connection FD path. The chroot example below supports
 both X11 and Wayland, without changing the compositor's app UID.
 
-MagicDesk does not implicitly switch its privileged backend, mount a rootfs,
+MaterialDesk does not implicitly switch its privileged backend, mount a rootfs,
 or store passwords. Interactive authentication can use terminal mode; graphical
 entry scripts must arrange authorization without a terminal prompt.
 
 See [`chroot-entry.sh`](../scripts/examples/chroot-entry.sh) for a root-only
-prepared-rootfs example with launch-scoped mounts. MagicDesk never acquires root
+prepared-rootfs example with launch-scoped mounts. MaterialDesk never acquires root
 on an individual recipe's behalf. Both PRoot and chroot use this guest file
 contract; ordinary Termux applications do not need it.
 
@@ -123,7 +123,7 @@ entries, with optional X11 or Wayland presentation. They need the option/argv co
 to use the Linux editor's shared user, directory and command fields.
 
 `Exec` is limited to 4096 characters and cannot contain a NUL character. `%%`
-represents a literal percent sign. MagicDesk expands these standard field
+represents a literal percent sign. MaterialDesk expands these standard field
 codes:
 
 - `%f` and `%u`: the first supplied local file or URI.
@@ -157,7 +157,7 @@ Exact MIME types, major-type wildcards such as `image/*`, and `*/*` are
 supported. Matching is case-insensitive. Entries without `MimeType` do not
 clutter the chooser. A command selected this way is a one-time launch target;
 the chooser's **Always** action remains limited to Android activities because
-it writes Android's real preferred-handler record rather than a MagicDesk-only
+it writes Android's real preferred-handler record rather than a MaterialDesk-only
 association.
 
 Non-graphical commands without field codes use raw shell syntax by default,
@@ -168,13 +168,13 @@ A literal percent must be written as `%%` in either mode.
 `Terminal` selects how the command is presented:
 
 - `Terminal=true` opens a command window for the selected backend. The shell
-  and Termux backends both use MagicDesk Console with their respective PTY
+  and Termux backends both use MaterialDesk Console with their respective PTY
   transports.
 - Missing or false `Terminal` starts graphical presentation when configured, otherwise
   runs the command in the background. Launch completion or failure is reported
   through the calling UI or automation result.
 
-The default backend is the Android shell identity authorized for MagicDesk:
+The default backend is the Android shell identity authorized for MaterialDesk:
 
 ```ini
 X-MagicDesk-ExecBackend=shell
@@ -183,7 +183,7 @@ X-MagicDesk-ExecBackend=shell
 Shell commands run through `/system/bin/sh -c`. Their programs, filesystem
 access, environment, and UID are those of the active shell service, not those
 of a regular Android application and not those of Termux. With
-`Terminal=true`, the command opens in MagicDesk Console.
+`Terminal=true`, the command opens in MaterialDesk Console.
 
 The standard optional `Path` field selects an absolute working directory:
 
@@ -205,8 +205,8 @@ X-MagicDesk-ExecBackend=termux
 It runs `Exec` through Termux's documented `RUN_COMMAND` service and
 `bash -lc`, using the Termux home directory and installed Termux packages.
 Termux must be installed, external app commands must be enabled in Termux, and
-the `RUN_COMMAND` permission must be granted to MagicDesk. With
-`Terminal=true`, MagicDesk opens a new Termux-backed Console and owns that PTY
+the `RUN_COMMAND` permission must be granted to MaterialDesk. With
+`Terminal=true`, MaterialDesk opens a new Termux-backed Console and owns that PTY
 as a retained terminal session. Closing its window detaches the view; explicit
 session termination closes the PTY. Desktop Entry command tracking does not own
 that lifetime.
@@ -241,7 +241,7 @@ the command must select its Wayland backend and a supported renderer. Both modes
 retain the server after the Android viewer closes.
 The PRoot editor generates this recipe for installed `proot-distro` environments.
 For custom proot/chroot setups, use an explicit `Exec` script exposing the
-supplied protocol endpoint and, for X11, authorization to the guest. MagicDesk does not infer
+supplied protocol endpoint and, for X11, authorization to the guest. MaterialDesk does not infer
 which guest application or desktop command to start.
 
 `X-MagicDesk-Graphics=wayland` selects the embedded Wayland compositor.
@@ -286,17 +286,17 @@ not persisted history, and reports unavailable access explicitly.
 Unknown backend names invalidate the entry instead of executing the command in
 an unintended environment.
 
-Backend availability and capabilities are reported in Diagnostics. MagicDesk
+Backend availability and capabilities are reported in Diagnostics. MaterialDesk
 assigns a stable bounded session ID to each command and records its latest
 `preparing`, `running`, `delegated`, `finished`, or `failed` state. `delegated`
 means that Console or an external backend accepted the command but does not
 provide a completion event to the launch tracker. This state is diagnostic:
-Console still owns its PTY, while MagicDesk does not claim ownership of
+Console still owns its PTY, while MaterialDesk does not claim ownership of
 independently running background Termux commands.
 
 ## Android applications
 
-MagicDesk-created generic Android application shortcuts contain a complete
+MaterialDesk-created generic Android application shortcuts contain a complete
 serialized Intent and an `am start` representation:
 
 ```ini
@@ -323,9 +323,9 @@ field is resolved in the current context.
 
 Unless `X-MagicDesk-Default=true` explicitly requests the package's current
 default launcher activity, `X-MagicDesk-Intent` takes priority and `Exec` is
-only a portable fallback. MagicDesk never invokes both. The Intent path is
+only a portable fallback. MaterialDesk never invokes both. The Intent path is
 preferred for Android applications because it preserves extras, categories,
-flags, and components while allowing MagicDesk to coordinate the destination
+flags, and components while allowing MaterialDesk to coordinate the destination
 display and window transition.
 
 An application action published through Android's shortcut service uses a
@@ -341,7 +341,7 @@ X-MagicDesk-AppShortcut=compose
 X-MagicDesk-WindowMode=auto
 ```
 
-MagicDesk resolves `X-MagicDesk-AppShortcut` from the current published
+MaterialDesk resolves `X-MagicDesk-AppShortcut` from the current published
 shortcut list each time it is opened. It stores neither the shortcut's private
 Intent nor a guessed `am start` fallback. If the publisher removes or disables
 that id, the entry remains on disk but launch fails cleanly.
@@ -360,15 +360,15 @@ Terminal=false
 ```
 
 This raw shell form follows Android's `am` behavior and does not by itself
-provide MagicDesk with structured launch metadata or a dynamic destination
-display. Use a MagicDesk-generated shortcut or `X-MagicDesk-Intent` when native
+provide MaterialDesk with structured launch metadata or a dynamic destination
+display. Use a MaterialDesk-generated shortcut or `X-MagicDesk-Intent` when native
 desktop window placement matters.
 
 ## Window modes
 
 `X-MagicDesk-WindowMode` accepts:
 
-- `auto`: restore the application's remembered MagicDesk mode and bounds.
+- `auto`: restore the application's remembered MaterialDesk mode and bounds.
 - `windowed`: request a freeform window.
 - `fullscreen`: request a true fullscreen task.
 
@@ -380,19 +380,19 @@ selection can override the recipe's default for that launch.
 
 An entry with both `X-MagicDesk-Package` and executable `Exec`, but without
 `X-MagicDesk-Intent` or `X-MagicDesk-Default=true`, is a composite launch.
-MagicDesk first prepares the package's Android task, then delegates `Exec`.
+MaterialDesk first prepares the package's Android task, then delegates `Exec`.
 The command is explicit and is not rewritten according to the Android package.
 An ordinary Start application icon launches only its Android application;
 creating its default shortcut does not add a companion command.
 
 ## Launch precedence
 
-For `Type=Application`, MagicDesk resolves one launch path in this order:
+For `Type=Application`, MaterialDesk resolves one launch path in this order:
 
 1. The package's default Android launch when `X-MagicDesk-Default=true`.
 2. The published action identified by `X-MagicDesk-AppShortcut`.
 3. `X-MagicDesk-Intent`, when present and valid.
 4. `Exec` through `X-MagicDesk-ExecBackend`, defaulting to `shell`.
 
-MagicDesk-generated entries use one semantic path. Generic Intent entries may
-also carry a portable `am start` fallback, but MagicDesk never invokes both.
+MaterialDesk-generated entries use one semantic path. Generic Intent entries may
+also carry a portable `am start` fallback, but MaterialDesk never invokes both.

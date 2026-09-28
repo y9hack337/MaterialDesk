@@ -153,7 +153,7 @@ final class DisplayTableView {
         row.setTextColor(DesktopUiFactory.COLOR_TEXT);
         row.setButtonTintList(new ColorStateList(
                 new int[][] {new int[] {android.R.attr.state_checked}, new int[0]},
-                new int[] {DesktopUiFactory.COLOR_CYAN, DesktopUiFactory.COLOR_MUTED}));
+                new int[] {DesktopUiFactory.COLOR_ACCENT, DesktopUiFactory.COLOR_MUTED}));
         row.setPadding(dp(8), dp(8), dp(8), dp(8));
         row.setCompoundDrawablePadding(dp(8));
         row.setMinHeight(dp(64));

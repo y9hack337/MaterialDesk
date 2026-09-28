@@ -47,7 +47,10 @@ final class StartMenuController implements StartMenuContent.Host {
         return mActivity.panels() != null && mActivity.panels().isRequested(mPanel);
     }
 
-    void toggle() { setVisible(!requested()); }
+    void toggle() {
+        final DesktopPanelWindowController panels = mActivity.panels();
+        setVisible(panels == null || !panels.isShowing(mPanel));
+    }
     void toggleTools() {
         if (isToolsVisible()) {
             setVisible(false);
@@ -78,9 +81,10 @@ final class StartMenuController implements StartMenuContent.Host {
         final Rect area = mActivity.getDesktopPanelAreaBounds();
         final int width = getWidth(area);
         final int height = getHeight(area);
-        final int margin = mUi.desktopDp(16, 6, mActivity.isCompactDesktopPreview());
+        final int gap = mUi.desktopDp(12, 4, mActivity.isCompactDesktopPreview());
+        // The application drawer opens centered above the centered dock.
         if (!panels.show(mPanel, ShellPanelPlacement.anchored(width, height,
-                ShellSurface.LEFT | ShellSurface.BOTTOM, margin, 0, 0, 0), focusable,
+                ShellSurface.BOTTOM, 0, 0, 0, gap), focusable,
                 "MagicDesk Start")) {
             mActivity.setErrorStatus(
                     "PANEL-001", mActivity.getString(R.string.status_desktop_panel_unavailable));
@@ -99,8 +103,9 @@ final class StartMenuController implements StartMenuContent.Host {
 
     private int getHeight(final Rect area) {
         final int margin = mUi.desktopDp(12, 4, mActivity.isCompactDesktopPreview());
-        return Math.min(mUi.dp(620), Math.max(
-                1, area.height() - margin));
+        // A tall drawer, as in Android's desktop taskbar; its grid scrolls.
+        return Math.min(mUi.dp(880), Math.max(
+                1, area.height() - margin * 2));
     }
 
     @Override public List<AppItem> apps() { return mActivity.getLauncherApps(); }

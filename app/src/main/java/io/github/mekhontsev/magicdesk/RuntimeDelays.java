@@ -14,7 +14,9 @@ public final class RuntimeDelays {
         VENDOR_COMMAND_SETTLE,
         WATCHDOG_TICK,
         STREAM_HEARTBEAT,
-        WORKING_STATE_REFRESH
+        WORKING_STATE_REFRESH,
+        /** Idle dimming and pixel shifting that protect an OLED panel. */
+        DISPLAY_PROTECTION
     }
 
     private RuntimeDelays() {

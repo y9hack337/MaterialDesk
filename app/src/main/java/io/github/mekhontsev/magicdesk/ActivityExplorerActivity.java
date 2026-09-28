@@ -116,7 +116,7 @@ public final class ActivityExplorerActivity extends Activity {
         commands.addView(history, wrapWrap());
         final Button query = ui.actionButton(
                 R.string.activity_explorer_query,
-                DesktopUiFactory.COLOR_CYAN);
+                DesktopUiFactory.COLOR_ACCENT);
         query.setOnClickListener(view -> query());
         commands.addView(query, wrapWrap());
         root.addView(commands, matchWrap());

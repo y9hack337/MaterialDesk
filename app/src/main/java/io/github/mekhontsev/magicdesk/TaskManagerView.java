@@ -51,7 +51,7 @@ final class TaskManagerView {
         header.addView(button(R.drawable.ic_file_refresh, R.string.action_refresh, v -> refresh.run()), square(44));
         root.addView(header);
         status = text(12, true); status.setPadding(0, dp(6), 0, dp(6)); root.addView(status);
-        warning = text(12, false); warning.setMaxLines(2); warning.setTextColor(0xFFFFC857); root.addView(warning);
+        warning = text(12, false); warning.setMaxLines(2); warning.setTextColor(DesktopUiFactory.COLOR_AMBER); root.addView(warning);
 
         search = new EditText(activity);
         search.setTextSize(14); search.setSingleLine(true); search.setHint(R.string.task_manager_search);
@@ -78,7 +78,7 @@ final class TaskManagerView {
         empty = text(14, true); empty.setText(R.string.task_manager_empty); empty.setGravity(Gravity.CENTER);
         root.addView(empty, new LinearLayout.LayoutParams(-1, dp(64)));
         list = new ListView(activity); list.setAdapter(adapter); list.setEmptyView(empty);
-        list.setDivider(new ColorDrawable(0xFF39424D)); list.setDividerHeight(dp(1));
+        list.setDivider(new ColorDrawable(DesktopUiFactory.COLOR_OUTLINE_VARIANT)); list.setDividerHeight(dp(1));
         root.addView(list, new LinearLayout.LayoutParams(-1, 0, 1));
         tabs.setOnCheckedChangeListener((group, id) -> {
             processes = id == processTab.getId();

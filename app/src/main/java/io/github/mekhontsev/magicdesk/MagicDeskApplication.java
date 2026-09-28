@@ -2,6 +2,7 @@ package io.github.mekhontsev.magicdesk;
 
 import android.app.Application;
 import android.content.Context;
+import android.content.res.Configuration;
 import android.os.Process;
 
 public final class MagicDeskApplication extends Application {
@@ -11,6 +12,7 @@ public final class MagicDeskApplication extends Application {
     public void onCreate() {
         super.onCreate();
         sApplicationContext = getApplicationContext();
+        DesktopUiFactory.applySystemPalette(this);
         // Auxiliary Activity processes own only their UI. Runtime startup and
         // recovery belong to the process hosting our service and Binder provider.
         if (!isPrimaryProcess(getProcessName(), getApplicationInfo().processName)) {
@@ -32,6 +34,13 @@ public final class MagicDeskApplication extends Application {
                 "started",
                 true,
                 "pid=" + Process.myPid());
+    }
+
+    @Override
+    public void onConfigurationChanged(final Configuration configuration) {
+        super.onConfigurationChanged(configuration);
+        // Wallpaper color changes arrive as resource configuration changes.
+        DesktopUiFactory.applySystemPalette(this);
     }
 
     static boolean isPrimaryProcess(

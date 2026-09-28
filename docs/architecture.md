@@ -1,6 +1,6 @@
-# MagicDesk Architecture
+# MaterialDesk Architecture
 
-This document describes MagicDesk's shared tools, automation, display resources
+This document describes MaterialDesk's shared tools, automation, display resources
 and optional managed Desktop. The core uses Android services; focused firmware
 and SoC adapters extend individual capabilities. It is intended for contributors,
 reviewers and users diagnosing compatibility problems.
@@ -85,7 +85,7 @@ retry completed checks. `TermuxSetupDialog` offers a user-run setup command and
 manual retry through the same status owner. Closing the dialog only unsubscribes;
 the shared check retains its bounded lifetime. No probe result gates tools.
 **Create display** belongs to the lower general-action grid and uses the table's
-current selection for creation defaults. **Exit MagicDesk** asks for confirmation
+current selection for creation defaults. **Exit MaterialDesk** asks for confirmation
 before invoking the existing exit controller. Desktop Start's Tools page exposes
 only **Close desktop** for its own workspace; global exit belongs to the control
 panel. Radio selection
@@ -169,7 +169,7 @@ task subject to the application's manifest, not another account or process.
 
 `ApplicationTaskPlacement` revalidates task identity and coordinates ownership
 handoffs. Android remains the source of all live tasks and their displays;
-MagicDesk tracks only its explicit Desktop membership. An unavailable membership
+MaterialDesk tracks only its explicit Desktop membership. An unavailable membership
 snapshot is unknown, not independent. Leaving Desktop uses its existing topology
 owner to release the task; ordinary-to-ordinary placement uses
 `FrameworkActivityLaunchApi` without initializing an organizer. Same-display
@@ -186,11 +186,11 @@ on the UI thread, without holding the registry lock. X11 hosts retain their
 task/output for client confirmation; actual client disappearance finishes the
 Activity and uses the existing task-removal observer. Task-scoped force stop
 uses that same handler before considering Android package termination. Explicit
-package-scoped force stop retains its Android semantics and rejects MagicDesk.
+package-scoped force stop retains its Android semantics and rejects MaterialDesk.
 
 ## Design Principles
 
-MagicDesk follows these constraints:
+MaterialDesk follows these constraints:
 
 1. Android applications remain real Android tasks.
 2. The firmware's `ShellTaskOrganizer` and native window decorations remain in
@@ -207,7 +207,7 @@ MagicDesk follows these constraints:
 9. User actions, tests, MCP, and Android system agents share one typed
    automation gateway instead of duplicating task or session policy.
 
-MagicDesk does not register a competing task organizer, host applications in
+MaterialDesk does not register a competing task organizer, host applications in
 surrogate activities, draw replacement captions, patch SystemUI,
 or require a Magisk module.
 
@@ -251,7 +251,7 @@ own task transitions or package-specific launch policy.
 ### Route devices through Android
 
 `DisplayInputSession` serializes ownership on one worker. Physical keyboards
-and mice remain Android InputReader devices; MagicDesk does not read or forward
+and mice remain Android InputReader devices; MaterialDesk does not read or forward
 their event streams. `DisplayInputRoutingSession`, hosted by the privileged service, binds
 their input locations to the selected display's stable unique ID through
 `FrameworkInputRoutingApi`. It selects the Android 14 association signatures or
@@ -283,7 +283,7 @@ the app callback can precede invalidation of the privileged process's separate
 device cache. Shortcut eligibility must not retain that stale association.
 This adds no polling or per-key Binder query. Outside a prepared Desktop it handles display
 switching only; Android retains application shortcuts, including Alt+Tab and
-Meta. With Desktop it also consumes MagicDesk combinations through the same
+Meta. With Desktop it also consumes MaterialDesk combinations through the same
 `DesktopOperations` and task-controller gateways as the UI. Ordinary key
 events continue through Android unchanged. Service enablement has its own
 shell-owned journal and preserves other Accessibility services.
@@ -307,8 +307,8 @@ shortcut enablement and device associations before display removal. A stale
 start completion cannot reopen input. Each session creates a fresh virtual
 mouse; hardware mice keep their Android identities throughout.
 
-MagicDesk uses one phone-side `MagicDeskTouchpadActivity` for every external
-transport. `TouchpadPointerMotion` converts successive finger coordinates into
+MaterialDesk uses one phone-side `MagicDeskTouchpadActivity` for every external
+transport. `TouchpadGestureRecognizer` converts successive finger coordinates into
 relative deltas. The shared native mouse relay forwards these deltas and button
 state through its virtual pointer; Android owns pointer acceleration, cursor
 visibility, hover shape, and window dragging. There is no additional motion
@@ -316,9 +316,9 @@ smoothing or acceleration loop. Explicit automation injects display-targeted
 Android mouse events, separately from optional cursor observation.
 
 A long press remains undecided until the finger either moves or is released.
-Movement starts a primary-button drag; release without movement becomes a
-secondary click. Two-finger movement scrolls, while a stationary two-finger
-tap also becomes a secondary click. These decisions stay in the phone UI;
+Movement starts a primary-button drag; release without movement does nothing.
+Two-finger movement scrolls, while a quick stationary two-finger tap is the
+only secondary click. These decisions stay in the phone UI;
 display-targeted event injection stays inside the shell UserService.
 
 The user's Android IME connects directly to the focused display editor through
@@ -358,8 +358,11 @@ software keyboard. Clicking the search field enables and explicitly requests
 the IME. Other applications use their own editor's native show/hide behavior.
 The chrome task permits focus only while a focusable panel or dialog is
 requested; its transparent base window and taskbar remain non-focusable.
-`DesktopPanelWindowController` acquires task focusability before attaching the
-panel and releases it on dismissal, failed attachment, or host teardown.
+`DesktopPanelWindowController` attaches a requested panel at once, so it draws
+and accepts pointer input even while the focus acknowledgement is ordered
+behind an application launch. Keyboard focus, the IME and dialogs wait for the
+acknowledgement; task focusability is released on dismissal, failed
+attachment, or host teardown.
 Acknowledgements from a closed panel cannot attach a replacement. The existing
 task command queue orders release before a following application launch; no
 worker, polling loop, or UI-thread Binder wait is added. Leaving the task
@@ -368,7 +371,7 @@ even with no focused child window. Conversely, making the
 whole task non-focusable rejects a child panel's input connection even when
 that child receives ordinary hardware key events.
 
-No editor text is captured or relayed by MagicDesk. Composing text, selection,
+No editor text is captured or relayed by MaterialDesk. Composing text, selection,
 deletion, editor actions, and Back-to-dismiss remain Android IME operations.
 There is no extra keyboard, polling loop, or software-keyboard selection.
 
@@ -393,7 +396,7 @@ keyboard preference is imposed during setup.
 
 ### Keep vendor input APIs behind a capability boundary
 
-MagicDesk does not package or link a Nubia binary library. The vendor surface
+MaterialDesk does not package or link a Nubia binary library. The vendor surface
 used for cursor diagnostics is the private Binder method
 `IInputManager.getMousePosition` on RedMagic firmware.
 
@@ -406,7 +409,7 @@ all platforms. They inject mouse events but do not reposition the hardware
 cursor. Phone touchpad movement remains relative native input.
 A missing optional package or method disables
 the corresponding operation rather than changing unrelated device state. In
-contrast, `libmagicdesk_uinput_bridge.so` is a MagicDesk-owned virtual mouse
+contrast, `libmagicdesk_uinput_bridge.so` is a MaterialDesk-owned virtual mouse
 helper compiled from repository C source by every local and CI build.
 Its bounded stdin protocol carries relative motion, buttons, scrolling and
 on-demand aggregate counters. EOF releases held buttons and destroys the
@@ -418,7 +421,7 @@ An application overlay cannot share a task's SurfaceControl leash or transition
 atomically with WMShell. A separately drawn caption trails live movement,
 maintains a different Z-order, and can leave controls above the wrong window.
 
-MagicDesk instead keeps native WMShell captions visible. One persistent,
+MaterialDesk instead keeps native WMShell captions visible. One persistent,
 transparent `DesktopChromeActivity` supplies the application token for the
 taskbar, Start, context menus, notification center, and desktop dialogs. The
 shell launches this STANDARD host in a root-level organizer area, a sibling of
@@ -435,7 +438,7 @@ create it.
 
 Custom caption controls require WMShell to preserve the application's
 display-specific gesture-exclusion regions. Shell privilege does not give
-MagicDesk ownership of SystemUI's input-window tokens. Replaying a caption
+MaterialDesk ownership of SystemUI's input-window tokens. Replaying a caption
 click as a synthetic touch is not equivalent to delivering its original mouse
 stream. Current validation gaps are recorded in
 [Compatibility](compatibility.md#known-limitations).
@@ -444,7 +447,7 @@ stream. Current validation gaps are recorded in
 
 Native freeform captions and the fullscreen App Handle can be supplied by one
 firmware decoration module. Disabling that module to remove the handle can
-also remove freeform controls. MagicDesk preserves native decoration ownership;
+also remove freeform controls. MaterialDesk preserves native decoration ownership;
 it does not restart SystemUI at session boundaries or draw substitute captions.
 A handle that cannot be hidden independently is a cosmetic firmware limitation,
 not justification for changing task lifecycle.
@@ -482,7 +485,7 @@ unchanged. Ordinary phone tasks are not adopted. Stale mode events release the
 unused reservation, and restoration still accepts a desktop-owned native root
 that has not acquired a plane.
 
-On display 0 MagicDesk is the active HOME surface. Android's WMShell normally
+On display 0 MaterialDesk is the active HOME surface. Android's WMShell normally
 starts `DesktopWallpaperActivity` above Launcher when its freeform mode is
 used; that fullscreen activity exists specifically to hide Launcher. While a
 phone desktop is active, the shell activity-start policy blocks only that
@@ -572,7 +575,7 @@ component.
 | --- | --- | --- |
 | Main application | `io.github.mekhontsev.magicdesk` | Phone control, desktop shell, taskbar, setup, diagnostics, and runtime service |
 | Task transfer boundary | `DesktopTaskTransfer` | Applies the freeform or fullscreen cross-display protocol for a running task |
-| Phone desktop wallpaper policy | `ShellPhoneDesktopWallpaperPolicy` | Keeps the MagicDesk HOME surface visible below standard freeform tasks |
+| Phone desktop wallpaper policy | `ShellPhoneDesktopWallpaperPolicy` | Keeps the MaterialDesk HOME surface visible below standard freeform tasks |
 | Fullscreen topology | `ShellFullscreenTaskArea` | Owns per-task fullscreen planes on every desktop target |
 | Hidden API stubs | `hidden-api-stubs/` | Compile-time signatures only; never packaged |
 | Terminal emulator | `terminal-emulator/` | Local byte-stream parser, screen buffers and terminal graphics |
@@ -619,7 +622,7 @@ runtime integration and are not distributed through the same release path.
   activity is exported only behind `MANAGE_ACTIVITY_TASKS`, allowing the shell
   launch backend to create its desktop task without exposing it to regular
   applications. `BuiltInDesktopAppCatalog` is the single allowlist that
-  separates user-facing MagicDesk tasks such as Files, Settings, and
+  separates user-facing MaterialDesk tasks such as Files, Settings, and
   Diagnostics from shell
   infrastructure. It also records whether an internal window can have multiple
   tasks, appear in the launcher or taskbar pins, and share profile-scoped application window
@@ -661,7 +664,7 @@ runtime integration and are not distributed through the same release path.
   residency snapshot. It implements the narrow `DesktopTaskRuntime`
   contract exposed through `MagicDeskRuntime`; callers do not locate a
   process-global active task controller. The optional non-reference-counted partial
-  wake lock is held only while both its setting and a MagicDesk desktop
+  wake lock is held only while both its setting and a MaterialDesk desktop
   session are active. A separate opt-in screen wake lock keeps the phone display
   on while any workspace is active, including simulated workspaces. Neither
   lock wakes a sleeping device; explicit screen-off and lock remain authoritative.
@@ -676,7 +679,7 @@ runtime integration and are not distributed through the same release path.
   writing through `FrameworkSystemThemeApi`; schedule and bedtime remain distinct
   from automatic, light and dark modes. Switching the preference retains the
   original policy. Do not change or the last workspace closing restores it only
-  while MagicDesk still owns the change. A settings observer relinquishes ownership
+  while MaterialDesk still owns the change. A settings observer relinquishes ownership
   on an observed external change; ordinary workspace refreshes do not reapply it.
   `DesktopSystemTheme` serializes setting events and workspace reconciliation on
   the existing command queue. Privileged-service readiness recovers an interrupted
@@ -685,7 +688,7 @@ runtime integration and are not distributed through the same release path.
   not redirect a profile's request to the privileged service's user. There is no
   polling, global ViewDebug invocation or SystemUI modification.
   These session settings do not modify Android's screen timeout. There is
-  no boot receiver; the user starts MagicDesk manually. The notification body
+  no boot receiver; the user starts MaterialDesk manually. The notification body
   is a stable display-0 entry
   point to Phone Control Panel; its separate touchpad action opens the
   phone-side input panel. Both use direct, immutable Activity PendingIntents
@@ -714,7 +717,7 @@ runtime integration and are not distributed through the same release path.
   task, window, capture, and UI controllers, and returns a uniform
   `DesktopAutomationResult`. It does not implement a second desktop policy.
 - `DesktopAutomationStateReader` exposes immutable snapshots of runtime,
-  displays, tasks, launchable applications, MagicDesk-owned UI, diagnostics,
+  displays, tasks, launchable applications, MaterialDesk-owned UI, diagnostics,
   self-test state, and the actual input window above each focused application.
   `DesktopWindowObservation` joins that shell-owned input state with bounded
   crash/ANR state from the existing task observer, so a surviving
@@ -730,7 +733,7 @@ runtime integration and are not distributed through the same release path.
   already delivered by `DesktopTaskWatcher`; it does not register another task
   observer. Compatibility reports include at most the newest 64 events within
   a 24 KiB section, without adding persistent telemetry.
-- `DesktopWindowTransitionProvenance` correlates semantic MagicDesk requests,
+- `DesktopWindowTransitionProvenance` correlates semantic MaterialDesk requests,
   application immersive callbacks, and activity-handoff corrections with those
   existing mode-change events. Uncorrelated supported mode changes are labeled
   `framework-external`; no stack trace, timer, or additional observer is used.
@@ -805,7 +808,7 @@ runtime integration and are not distributed through the same release path.
 - `MagicDeskCli` runs from the APK through Android `app_process`. Its parser
   derives options/help directly from the shared catalog and calls the same
   executor through a lazily created loopback socket. No HTTP or MCP settings
-  are involved. MagicDesk-launched shells inherit an ephemeral endpoint and
+  are involved. MaterialDesk-launched shells inherit an ephemeral endpoint and
   secret through `CommandShellEnvironment`; the listener checks this capability
   before dispatching any command. The generic entry script contains
   no secret. Shell binding is configured once per command-runtime/service pair,
@@ -908,7 +911,7 @@ runtime integration and are not distributed through the same release path.
   concrete launcher targets are pinned before dispatch. Other implicit Activity
   queries retain Android's default-handler filtering. Its typed
   `AndroidActivityAuthorization` independently evaluates enabled/exported
-  state, same-package access, and permissions granted to the MagicDesk app.
+  state, same-package access, and permissions granted to the MaterialDesk app.
   Shell is only a placement authority: denied app-identity access never crosses
   that boundary. Public handlers without a required permission or URI grants
   take the direct shell path. Choosers, system resolvers, content-grant Intents,
@@ -1053,6 +1056,57 @@ runtime integration and are not distributed through the same release path.
 
 - `StartMenuController`, `TaskbarController`, `TaskOverviewController`, and
   `NotificationCenterController` own the persistent desktop controls.
+- `DesktopUiFactory` is the Material You design system for MaterialDesk's own
+  chrome. Its color fields are Material 3 dark roles read from Android's
+  wallpaper-derived dynamic palette at process start and configuration change,
+  with the Material baseline as fallback. Shape tokens, state layers, tonal
+  buttons and menu/panel surfaces are shared by every panel. The taskbar is a
+  centered dock led by Start's application-drawer icon, with pinned and running
+  applications separated and pill running indicators. Start is an application
+  drawer on a tonal primary surface: one continuously scrolling grid, section
+  chips and launch options behind the search bar's trailing action. Native
+  WMShell captions keep their own system styling.
+- `RegionScreenshotController` captures the display through `CaptureService`
+  first, then shows the frozen frame in a `ShellPanelPlacement.fullOutput()`
+  overlay, so the overlay never appears in the image and no settling delay is
+  needed. Its toolbar offers Full screen and Cancel and hides while dragging.
+  The crop is saved through MediaStore to Pictures/Screenshots and copied to
+  the clipboard.
+- New task launches from the privileged service request MagicDesk's own
+  fade-and-settle open animation (`FrameworkActivityLaunchApi.useDesktopOpenAnimation`)
+  with the task-transition override. Android's default task animation clips a
+  small, scaling window with the phone's screen-corner radius, which looks like
+  an oval on a desktop display. Releases without those members keep their
+  default animation.
+- `AndroidQuickTiles` reads SystemUI's `sysui_qs_tiles` and presses application
+  tiles with `cmd statusbar click-tile` through the shared privileged service;
+  only SystemUI may bind tile services. Built-in tiles have no component, so
+  Quick controls also opens Android's own panel on the phone. Vendor SystemUI
+  forks may not implement `click-tile`.
+- `CalendarPanelController` is the clock's Material calendar flyout: the full
+  date, a `CalendarMonth` grid in the locale's week order with month
+  navigation, a filled circle for today and an outlined selection. Panel
+  toggles use `DesktopPanelWindowController.isShowing`, so a panel removed
+  without clearing its request opens on the next click instead of "closing".
+  Activity themes derive from `Theme.DeviceDefault`, giving system dialogs,
+  menus and widgets the platform's Material You styling.
+- `FileManagerView` follows the same design system: a collapsible navigation
+  rail of storage and media folders, pill history and address bars, a toolbar of
+  tonal actions led by a filled **New** menu, a list/grid segmented switch, and
+  a rounded content card whose table header selects all and sorts by column.
+  `ShellFileAdapter` rows show size and modified columns in wide windows and
+  use the activated state for selection and drop targets.
+- `FileDragPayload` reaches MaterialDesk windows other than the drag source:
+  Android delivers the local state only to the source window, so drops rebuild
+  the paths from the ClipData. Shareable drags map MaterialDesk's own content URIs
+  back to paths; private drags, which Android limits to MaterialDesk windows, carry
+  the paths in an Intent item. `DeferredContextDragGesture` starts a mouse drag
+  on movement and keeps scrolling parents from intercepting it.
+- Dragging over empty desktop space draws a rubber-band selection
+  (`DesktopSelectionMarquee`, drawn by `DesktopGridLayout`). Selection is the
+  item views' activated state, updated in place. Copy, cut, open and delete
+  apply to the whole selection, including context-menu commands on a selected
+  item; Ctrl extends the marquee and Ctrl+A selects every visible item.
 - `DesktopWorkspaceController` composes the fixed Android `Desktop` directory,
   freedesktop folder, web, and application Desktop Entries, and Android widgets
   on one `DesktopGridLayout` surface. Desktop Entries remain real files and use
@@ -1198,7 +1252,7 @@ Unknown and unsupported task users cannot overwrite current-profile geometry
 or receive its DPI. Application details, shortcuts and force-stop resolve the
 explicit profile before dispatch; force-stop uses its resolved user id.
 
-The Desktop directory remains a single shared MagicDesk workspace, not a
+The Desktop directory remains a single shared MaterialDesk workspace, not a
 separate directory per application profile. File placement is path-based, while an Android application's profile is stored
 inside its Desktop Entry. This does not grant access to another profile's
 files or URIs. No Private Space permission or additional profile UI is declared
@@ -1223,7 +1277,7 @@ by this foundation.
   A task starts behind HOME until its identity is known; one complete native
   OPEN then establishes its freeform mode, bounds and visible order in Android's
   standard root workspace. Callers do not append to an expired opening token.
-- `ShellActivityStartController` is MagicDesk's single owner of Android's global
+- `ShellActivityStartController` is MaterialDesk's single owner of Android's global
   activity-controller slot and dispatches starts to the external-migration and
   windowed-startup policies. The session option `ACTIVITY_HANDOFF_REPAIR`
   enables `ShellTaskActivityModeGuard`. It correlates Activity starts with the
@@ -1301,7 +1355,7 @@ by this foundation.
   moves, including `Alt+Tab`, and scans display 0 when protection starts and
   after task-stack changes. Every observed freeform task is normalized while
   an external session is active. This invariant applies to
-  MagicDesk and third-party tasks alike, so display 0 never retains transient
+  MaterialDesk and third-party tasks alike, so display 0 never retains transient
   freeform state from those transitions.
 - `DesktopWindowTransitionController` owns shortcut and immersive policy. It
   emits immutable `DesktopWindowTransitionRequest` values through
@@ -1325,7 +1379,7 @@ by this foundation.
   last visible Z-order, and fullscreen-transition freeze as one display-scoped
   value. It is cleared with that controller and is not process-global.
 - `NativeWindowBoundsController` owns freeform bounds requests and the shared
-  restore history for native snap/maximize and MagicDesk shortcuts. Correcting
+  restore history for native snap/maximize and MaterialDesk shortcuts. Correcting
   Android's full-height bounds to reserve the taskbar preserves the ordinary
   window geometry. Restore uses that same history; subsequent native moves or
   resizes replace it instead of triggering a resize back to the work area.
@@ -1571,7 +1625,7 @@ firmware APIs that the host does not expose.
 
 ### Platform services
 
-MagicDesk ships one main APK from one codebase. New device support belongs in
+MaterialDesk ships one main APK from one codebase. New device support belongs in
 runtime capability probes or a focused platform-driver implementation, while
 shared desktop, task, window, and input behavior remains platform-independent.
 Do not introduce per-model build variants or forks for differences that can be
@@ -1614,7 +1668,7 @@ isolated behind these boundaries.
   `config_canInternalDisplayHostDesktops` resource for compatibility reports.
   It is deliberately diagnostic rather than a launch gate: this resource
   describes the framework's standard internal-display desktop path, while a
-  vendor or shell path may still host MagicDesk on display 0 when it is false.
+  vendor or shell path may still host MaterialDesk on display 0 when it is false.
   The actual phone-desktop behavior is verified by the same self-test used for
   other display targets.
 - Implementations live in `platform.android` and `platform.nubia`. Shared
@@ -1741,7 +1795,7 @@ claimed once; multiple tmux clients remain one session entry. Android resource
 figures are package-process totals and can be shared by multiple windows. tmux
 resources come from pane processes and their same-UID descendants. X11 entries
 label server-only resources; clients remain visible in Processes. The Termux
-filter includes processes started outside MagicDesk as well.
+filter includes processes started outside MaterialDesk as well.
 Applications and Processes share name, CPU and memory ordering through
 `TaskManagerSort`; processes additionally offer PID ordering and a collapsible
 tree. Resource sorts place unknown samples last and use stable identity/name
@@ -1781,7 +1835,7 @@ viewer retains its server when closed; an individual-client host requests X11
 window closure, and an application-owned server ends after its last window.
 Admission requires the captured server UID
 and a session nonce before Xorg starts. The server's owner Binder ties its
-lifetime to the MagicDesk process, while Xauthority isolates X clients.
+lifetime to the MaterialDesk process, while Xauthority isolates X clients.
 No Desktop coordinator or HOME lease is initialized by this shared tool.
 `X11Execution` owns server bootstrap: Termux uses RUN_COMMAND, while Shell uses
 an app-UID process and explicitly staged XKB data. `CommandExecution` captures
@@ -1803,7 +1857,7 @@ file access: Termux launches resolve an exact freshly queried catalog path.
 `GraphicalApplicationLaunch` turns graphical presentation into a normal Android launch request;
 the native window model owns X relationships, never Android task topology.
 Clipboard and copy drag-and-drop reuse the shared Android content boundary;
-the fork owns native selection/XDND negotiation, while MagicDesk owns the Java
+the fork owns native selection/XDND negotiation, while MaterialDesk owns the Java
 transactions, focus and URI grants. The local `x11-runtime` module owns Java,
 Binder bootstrap, executor context and JNI. The native fork exposes `embedded.h`
 with opaque connections, borrowed native windows, owned descriptors and callbacks;
@@ -1928,7 +1982,7 @@ names once at application startup. Settings can save new names or reset to the
 original packages. These bootstrap preferences live in app-private storage and
 are readable before the privileged service connects, independently of shell-backed Desktop state.
 Changes take effect in the next process, without reconciling active services or
-terminals. **Exit MagicDesk** always ends the process after normal Desktop and
+terminals. **Exit MaterialDesk** always ends the process after normal Desktop and
 shared-service cleanup; reopening applies all saved startup settings. It does
 not depend on which setting changed. UI, automation and command providers share
 this selection. Diagnostics
@@ -2001,7 +2055,7 @@ bounded service to `device.keep_awake(displayId=...)`; ordinary phone mode keeps
 its public-API, no-shell path.
 
 `BackgroundWorkProtection` combines overlapping claims into one transient session
-per UID. It includes MagicDesk explicitly, without assuming HOME exemption, and
+per UID. It includes MaterialDesk explicitly, without assuming HOME exemption, and
 retains observed application UIDs for the work interval. `FrameworkTaskObservationSource`
 provides event-only application ownership subscriptions with an initial typed UID
 snapshot; this path does not initialize Desktop's sampler or window organizer.
@@ -2036,7 +2090,7 @@ delivery receipts distinguish complete, partial and unconfirmed writes.
 
 Termux service resolution is restricted to the selected package and the
 standard `com.termux.RUN_COMMAND` action. A unique exported service must retain
-the command/result protocol and a permission MagicDesk supports. A renamed
+the command/result protocol and a permission MaterialDesk supports. A renamed
 custom permission is reported as incompatible, not bypassed. Shell paths use
 the protocol's `$PREFIX/` expansion; helper installation uses Termux's own
 `HOME`/`PREFIX` environment. Absolute initial directories use the selected
@@ -2176,7 +2230,7 @@ authenticated socket remains the complete ownership boundary.
 Console selection and terminal copy/paste callbacks, compatibility reports,
 logs, paths, settings, and automation all use its typed text operations.
 Termux-backed Console windows therefore share the same Android system
-clipboard as shell-backed Console and ordinary Android applications; MagicDesk
+clipboard as shell-backed Console and ordinary Android applications; MaterialDesk
 does not maintain a terminal clipboard mirror. Sensitive MCP connection data
 is marked for protected Android clipboard previews. Clipboard access is
 request-driven outside focused guest hosts. `HostedContentExchange` subscribes through
@@ -2216,7 +2270,7 @@ present; multiple files cannot redirect that action to a link in their text.
 `AndroidContentPayload` serializes `ClipData`; `AndroidContentIntentAdapter`
 builds user-facing View/Share Intents from the same payload.
 Read grants travel in both `ClipData` and Intent flags, so the selected
-application receives the same content that MagicDesk classified. Clipboard
+application receives the same content that MaterialDesk classified. Clipboard
 **Open** and **Share** are explicit desktop actions and launch through the
 production Android integration path; content-authorized MCP exposes the same operations
 without adding another executor. Dropping content on an application or its
@@ -2224,7 +2278,7 @@ taskbar instance uses the same payload and gateway; an existing task id is an
 explicit presentation target rather than an inferred package reuse. Ordinary
 state and diagnostics contain only counters and metadata.
 
-`DesktopContentReceiverActivity` is the exported **Save to MagicDesk Desktop**
+`DesktopContentReceiverActivity` is the exported **Save to MaterialDesk Desktop**
 share target. Because an exported Activity can be invoked explicitly, it asks
 for user confirmation before writing anything. Accepted URI content is copied
 while the incoming grant is alive; accepted plain text becomes a UTF-8 desktop
@@ -2266,7 +2320,7 @@ session, so those sessions remain owned by the Termux UI.
 `TermuxCommandResultReceiver` owns each result callback, timeout, and one-shot
 `PendingIntent` as one registration. Completion, cancellation, and timeout all
 remove that registration and cancel its remaining resources. The callback
-Intent uses a unique data URI, so a token retained by Termux across MagicDesk
+Intent uses a unique data URI, so a token retained by Termux across MaterialDesk
 process death cannot match a later request. `DesktopExecSessionTracker` records
 each execution separately, including repeated launches of the same command;
 late start acknowledgements cannot reopen a completed diagnostic session.
@@ -2387,7 +2441,7 @@ window captions and display IME policy keep their existing owners. This applies
 when the display is created, not when its viewer is detached or attached to
 another output.
 Android's optional forced external desktop mode or a system display override can
-still enable system decorations; MagicDesk does not change those settings here.
+still enable system decorations; MaterialDesk does not change those settings here.
 
 Virtual-display creation optionally accepts `protectedContent`, off by default
 and not inherited from creation preferences. The current privileged service must
@@ -2410,7 +2464,7 @@ Desktop eligibility remain independent.
 presentation outputs. Android rejects organizer-created task areas on untrusted
 displays even for privileged callers. Such a display can still receive an
 ordinary Viewer through the privileged Activity launcher: a portable workspace
-keeps its HOME, task areas and input on MagicDesk's trusted virtual source.
+keeps its HOME, task areas and input on MaterialDesk's trusted virtual source.
 The catalog publishes `requiresPortableDesktop` separately from direct eligibility:
 a known public external output lacking TRUSTED uses the portable launch path when
 Start Desktop is requested. Private, unknown and unverified additional built-in
@@ -2448,7 +2502,7 @@ Activity teardown releases the binding; there is no separate MCP attach/detach
 protocol or CLI implementation. `select_display_viewer` remains the operation
 for changing a live binding's source or returning to its previous source.
 
-`DisplayPresentationMode` distinguishes direct presentation of a MagicDesk-owned
+`DisplayPresentationMode` distinguishes direct presentation of a MaterialDesk-owned
 virtual source from mirroring an existing display, including an owned virtual
 source. Every built-in panel is
 addressed by its own display ID and unique ID; mirroring is not restricted to
@@ -2595,7 +2649,7 @@ choosing a reconnected output
 does not turn the portable Desktop into a windowed viewer. The choice belongs
 to the command, not stored display metadata; input remains explicitly acquired.
 `DesktopPresentationLauncher` first retains the output's existing Attach. Otherwise
-it selects a MagicDesk-owned headless virtual source with the same current logical
+it selects a MaterialDesk-owned headless virtual source with the same current logical
 resolution, no other output attachment, and compatible protection/cycle constraints.
 The fewest managed application tasks wins, followed by matching profile origin and
 ascending display ID. Infrastructure is excluded; unavailable membership is an
@@ -2617,7 +2671,7 @@ The normal transition gate explicitly accepts or rejects startup. Driver results
 propagate through it, so the portable launch callback reports the Desktop launch
 result, not just a successfully attached viewer.
 
-Owned virtual displays are named **MagicDesk** and distinguished by their display
+Owned virtual displays are named **MaterialDesk** and distinguished by their display
 IDs. The control panel's creation dialog initially selects **Default**, a snapshot
 of the table's selected display's current resolution and configured DPI. Without
 a selection it uses the saved creation parameters; scale remains editable.
@@ -2637,11 +2691,11 @@ phone/HDMI logical-display exchange and seamless native pointer
 crossing between outputs are not implemented by this presentation path.
 
 Starting the first desktop acquires one
-persisted `DesktopHomeRoleLease`: MagicDesk temporarily becomes the package-wide
+persisted `DesktopHomeRoleLease`: MaterialDesk temporarily becomes the package-wide
 Android HOME holder and remembers the previous role state plus the complete
 target membership. Further workspaces join that lease without acquiring HOME
 again. Android may have a working HOME surface while the role has no explicit
-holder; that empty state is valid and is restored by removing MagicDesk rather
+holder; that empty state is valid and is restored by removing MaterialDesk rather
 than selecting a launcher on the user's behalf.
 The same lease owns the `MAIN`/`SECONDARY_HOME` preferred Activity. Before enabling
 its components it captures the resolved handler, or resolves Android's
@@ -2683,7 +2737,7 @@ presenting the restored launcher; later cleanup failure never reclaims HOME.
 A failed component selection retains the closing membership for recovery rather
 than recreating a workspace that has already closed.
 Unexpected display loss releases that workspace's lease membership through the same role boundary,
-and a user-selected third-party HOME is never overwritten. If a new MagicDesk
+and a user-selected third-party HOME is never overwritten. If a new MaterialDesk
 process starts while still holding HOME, the startup guard disables its HOME
 surfaces and opens system HOME immediately without waiting for the privileged
 service. It marks the lease `STARTUP_RELINQUISHED`; once privileges are ready,
@@ -2714,7 +2768,7 @@ close operation; transport-specific code stops at target preparation.
   connection; reopening its settings does not request an automatic return to
   the panel. Cast-settings availability does not guarantee Miracast support;
   a real secondary display must still appear in the shared display catalog.
-- Once Android reports a Wi-Fi display, MagicDesk passes that display ID to the
+- Once Android reports a Wi-Fi display, MaterialDesk passes that display ID to the
   common desktop session. It does not implement a second discovery or streaming
   stack.
 - Display preparation and session ownership are separate. The phone panel
@@ -2744,7 +2798,7 @@ close operation; transport-specific code stops at target preparation.
 - Close Desktop returns that workspace's tasks, releases input only if selected
   there, and restores HOME only for the last workspace, without deleting a display.
   Explicit removal validates both runtime ID and unique identity, requires
-  MagicDesk ownership, closes an active session on that display first, then
+  MaterialDesk ownership, closes an active session on that display first, then
   waits for transition quiescence before releasing the display token. Wired,
   wireless, foreign virtual, and built-in screens cannot be removed this way.
   DisplayManager callbacks refresh the panel; catalog reads add no polling.
@@ -2828,7 +2882,7 @@ requests the native horizontal resize cursor and verifies WMShell's transition
 trace when that firmware trace is available.
 
 The application-fullscreen phase keeps one application-owned immersive task
-and two MagicDesk-managed fullscreen peers alive together. It activates each
+and two MaterialDesk-managed fullscreen peers alive together. It activates each
 peer through the common single-task focus gateway, returns to the immersive
 task, and verifies distinct stable planes, all three task modes, real input
 focus, the application's immersive marker, and the rendered fullscreen
@@ -2860,7 +2914,7 @@ never left freeform on display 0. The external target selects the existing
 wired or wireless display automatically and never treats the physical display
 or its unrelated tasks as test-owned. An existing Miracast transport remains
 connected. The phone target uses the normal local-
-desktop navigation and cleanup path. Each target closes only the MagicDesk host
+desktop navigation and cleanup path. Each target closes only the MaterialDesk host
 and test fixtures that it created. Cleanup closes the host before removing its
 fixture tasks so SystemUI can reconcile live task IDs instead of retaining
 references to tasks that the test already destroyed. The phone navigation
@@ -2905,7 +2959,7 @@ finish HOME instead of invoking the desktop's existing Back handler.
 Fullscreen applications use the same independent per-task planes as every
 other target. The exact SystemUI desktop-wallpaper activity is suppressed only
 while phone desktop is configured, because that AOSP surface exists to cover
-Launcher and would otherwise cover MagicDesk's desktop icons as well. Taskbar
+Launcher and would otherwise cover MaterialDesk's desktop icons as well. Taskbar
 visibility follows fullscreen and auto-hide policy directly.
 
 A cold freeform launch is staged behind the desktop host until Android assigns
@@ -3092,7 +3146,7 @@ callbacks.
 
 `Win+D` gives the live desktop-host focus state precedence over the cached task
 snapshot. A newly opened system activity can therefore never make a stale
-"no visible app" snapshot select Restore; MagicDesk exposes the taskbar and
+"no visible app" snapshot select Restore; MaterialDesk exposes the taskbar and
 raises the desktop host first. Once the watcher confirms that state, the next
 `Win+D` can restore the previously visible freeform stack normally.
 
@@ -3108,7 +3162,7 @@ unconditionally assumes that view is present. Current AOSP Launcher3 permits
 the field to be absent; this is a vendor integration defect rather than
 malformed task metadata.
 
-While a desktop session is active, MagicDesk owns Android's HOME role.
+While a desktop session is active, MaterialDesk owns Android's HOME role.
 `PhoneHomeActivity` remains the phone navigation surface throughout the shared
 HOME lease, showing ordinary Start or the local Desktop. The task layer enforces a
 separate invariant: no application task may remain freeform in the ordinary
@@ -3203,7 +3257,7 @@ Its window-local automation registry does not register a desktop host.
 External task observers attach `ShellSecondaryHomeStartPolicy` to the shared
 activity-start controller while configured. It rejects unaddressed secondary
 HOME selection before any Activity or HOME root is brought forward, including
-selectors resolved to MagicDesk itself. Android's package-addressed per-area
+selectors resolved to MaterialDesk itself. Android's package-addressed per-area
 HOME starts and our explicit display-targeted host launches are preserved.
 The callback exposes no destination options, so admission does not infer a
 display from focus or launch a replacement. Closing one workspace removes only
@@ -3231,7 +3285,7 @@ the later presentation avoids asking Android to start HOME through an
 organizer hierarchy that is being removed. It also prevents Android from
 leaving the now-inactive `PhoneHomeActivity` task visible after the role itself
 has already changed.
-Both MagicDesk HOME components are disabled when no workspace is owned,
+Both MaterialDesk HOME components are disabled when no workspace is owned,
 including their manifest defaults. First preparation enables `PhoneHomeActivity`
 and `DesktopActivity` in the same component batch, before role acquisition and
 HOME presentation. Adding or closing a non-final workspace leaves both identities
@@ -3244,11 +3298,11 @@ The runtime's existing start/close gate prevents recovery callbacks from
 finalizing that lease concurrently. Existing HOME instances ignore new HOME
 requests during release rather than destroying the host ahead of its owner.
 Final Close, rollback, and session loss leave both disabled;
-neither primary nor secondary launcher choices may offer inactive MagicDesk.
+neither primary nor secondary launcher choices may offer inactive MaterialDesk.
 A missing role holder
 therefore reaches Android's launcher resolver without selecting inactive
-MagicDesk again. Process-start recovery disables the surfaces before privilege acquisition
-is needed, and detects both a stale lease and HOME resolution to MagicDesk,
+MaterialDesk again. Process-start recovery disables the surfaces before privilege acquisition
+is needed, and detects both a stale lease and HOME resolution to MaterialDesk,
 not just `RoleManager.isRoleHeld`.
 An isolated self-test closes its own fixtures through the production task
 controller before calling the common Close-to-HOME coordinator. Workspace
@@ -3295,11 +3349,11 @@ closing the current one. Start and Close operations are serialized.
 **Close desktop** addresses only that row's workspace. Application placement
 and input selection remain independent.
 
-Neither task mode nor display identity is an ownership signal. MagicDesk claims a task
+Neither task mode nor display identity is an ownership signal. MaterialDesk claims a task
 before submitting a desktop launch or window transition, and only claimed
 tasks publish immersive, orientation, mode, and bounds changes to the desktop
 window controller. This prevents a SystemUI launch that briefly reports
-freeform from being restored or resized by MagicDesk. The same rule applies to
+freeform from being restored or resized by MaterialDesk. The same rule applies to
 phone, simulated, wired and wireless workspaces. Independent tasks remain
 visible to whole-display diagnostics and foreground/chrome policy, but are
 excluded from Desktop's taskbar, Alt+Tab, mode guard and cleanup.
@@ -3383,7 +3437,7 @@ Entry scripts can also use the existing shell executor without Termux. Graphical
 shell recipes specify an explicit host-visible XKB directory; terminal recipes
 do not require it. The same `.desktop` and Recent models carry that choice.
 Custom entry scripts own guest setup, mounts and any explicit authorization;
-MagicDesk neither acquires root for them nor persists passwords. `TermuxDesktopEntries`
+MaterialDesk neither acquires root for them nor persists passwords. `TermuxDesktopEntries`
 publishes the complete file without replacing a different existing entry in
 Termux's user XDG applications directory, using RUN_COMMAND rather than shell
 filesystem access. The existing catalog, launch coordinator, PTY/X11 owners
@@ -3479,7 +3533,7 @@ The fixed Desktop surface and the general Files task use separate typed AIDL
 contracts instead of interpolating filenames into shell commands.
 `ShellDesktopDirectory` rejects paths outside its fixed root, symbolic-link
 traversal, invalid names, and accidental overwrite. Removing an application
-shortcut or widget never deletes application data, and MagicDesk does not
+shortcut or widget never deletes application data, and MaterialDesk does not
 delete the Desktop directory or its contents during Exit or uninstall.
 Desktop changes arrive through `FileObserver`; the fixed folder is not polled.
 State and wallpaper writes use an exclusively created temporary file in the
@@ -3536,7 +3590,7 @@ is discarded when the operation completes; it is not a persistent index.
 If cross-filesystem move cleanup fails after a complete copy, the destination
 is retained rather than risking loss of both copies.
 
-`FileOperationCenter` owns copy, move, and delete at MagicDesk process scope.
+`FileOperationCenter` owns copy, move, and delete at MaterialDesk process scope.
 Its `FileOperationState` binds callbacks to the originating request, including
 before the remote operation ID is returned. Cancellation, disconnection, or a
 new request cannot let late callbacks finish another operation or clear its
@@ -3639,7 +3693,7 @@ value rather than the requested flag.
 Files and Desktop can also paste content copied by another Android
 application. URI items are imported as files; plain text becomes a UTF-8
 `.txt` file (or `.html` when HTML is the only representation). External
-consumers always see copy semantics; only MagicDesk can
+consumers always see copy semantics; only MaterialDesk can
 complete the internal move. A completed move clears only its own generation
 and the matching Android URI clip, so an older operation cannot discard a
 newer selection or unrelated clipboard data.
@@ -3695,9 +3749,9 @@ does not interrupt an already running Binder call.
 The in-task **Open with** dialog avoids Android ResolverActivity hiding the
 desktop taskbar. It reads Android's current preferred handler. Its **Always**
 action asks the shell UserService to write the same PackageManager preferred
-activity record used by the system resolver; MagicDesk does not maintain a
+activity record used by the system resolver; MaterialDesk does not maintain a
 second file-association database. The same dialog can include executable
-Desktop Entries from the MagicDesk desktop when their standard `MimeType`
+Desktop Entries from the MaterialDesk desktop when their standard `MimeType`
 list matches and `Exec` accepts a file or URI field code. These command
 profiles are one-time launch targets: they never enter Android's preferred
 activity record and therefore cannot be selected with **Always**.
@@ -3731,7 +3785,7 @@ Incomplete imports are removed when their recorded identity still matches,
 conflicts gain a numeric suffix, and the incoming drag grant is released.
 Cross-window import depends on the source
 publishing an Android global drag session; private in-window drag gestures are
-not visible to MagicDesk. For drags between MagicDesk's own Desktop and Files
+not visible to MaterialDesk. For drags between MaterialDesk's own Desktop and Files
 windows, `FileDragPayload` keeps absolute paths in process-local state. That
 typed path supports files and recursive folders without publishing privileged
 paths or inventing directory content URIs; the default action is move and
@@ -3739,7 +3793,7 @@ holding `Ctrl` when the drag starts selects copy. Only a complete bounded
 selection of readable ordinary files receives read-only URIs for drops into
 other Android applications. Mixed selections are never exported as a subset.
 On Android 15+, local-only selections use `DRAG_FLAG_GLOBAL_SAME_APPLICATION`,
-so files and folders can cross MagicDesk windows without exposing a label-only
+so files and folders can cross MaterialDesk windows without exposing a label-only
 drag to other applications. On Android 14, those selections stay within the
 source window. Files passes Android's actual drag-start result
 back to the gesture owner. The built-in Console
@@ -3754,10 +3808,10 @@ shared half-character cannot become a replacement shell path.
 Optional Termux integration
 uses Termux's documented `RUN_COMMAND` intent and permission; it is not
 required by Files. Files can launch a new Termux-backed Console at its current
-shared directory. MagicDesk atomically installs a versioned native relay from
+shared directory. MaterialDesk atomically installs a versioned native relay from
 the APK through `RUN_COMMAND_STDIN`; a random per-window token authenticates
 the relay's loopback connection before any terminal bytes are accepted.
-MagicDesk does not mirror or mutate the Termux application's own PTY registry.
+MaterialDesk does not mirror or mutate the Termux application's own PTY registry.
 When tmux is installed, its independent session registry is queried on demand by
 session pickers, Task Manager and automation, not by resource-sampling timers.
 Bounded Termux commands use its documented `RUN_COMMAND_PENDING_INTENT`
@@ -3788,14 +3842,14 @@ During a managed Activity dispatch, `ShellTaskLauncher` owns a bounded
 `ShellActivityLaunchScope` carrying its resolved launch identity. All workspace
 phone-migration and Activity-handoff guards consult that shared provenance,
 including on Binder callback threads; caller Intent flags are not reliable
-evidence of an explicit MagicDesk launch. The scope ends on success or failure,
+evidence of an explicit MaterialDesk launch. The scope ends on success or failure,
 without a timer, and does not bypass unrelated Activity admission policies.
 It recognizes the requested component and its alias target, not every Activity
 in the package (except explicitly package-scoped selection surfaces).
 
 ## External Desktop Activation
 
-When starting Desktop on a selected external display, MagicDesk:
+When starting Desktop on a selected external display, MaterialDesk:
 
 1. resolves the selected live display and its stable identity;
 2. loads the profile keyed by that display's stable identity;
@@ -3806,7 +3860,7 @@ When starting Desktop on a selected external display, MagicDesk:
 
 The target's workspace identifies the Android display that actually hosts the
 tasks; its output identifies the selected presentation endpoint. The current
-presenter binds them directly. MagicDesk does not create a vendor projection
+presenter binds them directly. MaterialDesk does not create a vendor projection
 display, infer lifecycle state from vendor settings, or return the physical
 transport to another mode when the desktop closes.
 
@@ -3827,7 +3881,7 @@ display-specific restore exceptions.
 Failed secondary HOME launches retain per-attempt evidence before cleanup:
 `DesktopHostLaunchDiagnostics` records the Android start result, stage, caller
 identity and returned task/type. Only a failure reads one bounded cross-display
-snapshot through `FrameworkTaskSnapshotSource`; it reports MagicDesk and HOME
+snapshot through `FrameworkTaskSnapshotSource`; it reports MaterialDesk and HOME
 task metadata, never Intent extras or UI contents. Missing observations remain
 unknown. The bounded exception survives Binder into `DESKTOP-LAUNCH-002`, so a
 report collected after HOME release still explains the failed launch. It adds
@@ -3876,8 +3930,8 @@ Preparation waits for the selected mode and resolves the display identity again
 because a mode change can recreate the logical display. The per-display profile
 stores output timing separately from UI density.
 
-**System/native** relinquishes MagicDesk's Android mode preference once when
-leaving an explicit MagicDesk selection. Later starts preserve the system's mode;
+**System/native** relinquishes MaterialDesk's Android mode preference once when
+leaving an explicit MaterialDesk selection. Later starts preserve the system's mode;
 there is no repeated reset. Failure to apply an optional timing does not imply
 that the monitor's current mode cannot host Desktop.
 
@@ -3894,7 +3948,7 @@ The firmware filters external layers whose names contain `Task=`. AOSP caption
 layers are named `Caption of Task=<id>`, so captions can remain interactive but
 become visually black or absent. Nubia's exported projection provider reports
 the current wireless and wired privacy preferences independently. During an
-external session MagicDesk sets only the active transport's filter to visible,
+external session MaterialDesk sets only the active transport's filter to visible,
 records lifecycle ownership, and restores that transport's latest preference
 on session exit, transport change, or next-start recovery. Simulated displays
 do not acquire this vendor state.
@@ -3917,7 +3971,7 @@ changes are not overwritten. Close restores the package before restoring caption
 privacy, before acknowledging completion. No saved firmware privacy preference
 is modified. Shared startup recovers an interrupted lease when access becomes
 ready without initializing Desktop; an application crash can therefore leave
-the package disabled until MagicDesk next starts with privileged access.
+the package disabled until MaterialDesk next starts with privileged access.
 
 ### Teardown
 
@@ -3934,8 +3988,8 @@ This retained task-layout record is distinct from portable workspace parking:
 parking leaves a virtual Desktop active and changes only its output presentation.
 The same record is captured from the latest observed task snapshot when
 a display disappears or a desktop host is replaced before an explicit close can
-query it. An explicit **Exit MagicDesk** clears this record and closes built-in
-MagicDesk windows instead.
+query it. An explicit **Exit MaterialDesk** clears this record and closes built-in
+MaterialDesk windows instead.
 
 `DesktopCloseMode` distinguishes Close to the control panel, Close to the
 restored HOME (including the phone HOME surface), and full Exit. It names a UI
@@ -3965,7 +4019,7 @@ launcher invocation or runtime compatibility probe. An unresolved or
 unavailable Activity does not block HOME ownership or restoration, which
 continues to use the role-holder package as its authoritative identity.
 The lease enters `RELEASING` before that handoff so startup recovery can finish
-an interrupted release without treating it as an active desktop. If MagicDesk
+an interrupted release without treating it as an active desktop. If MaterialDesk
 still owns HOME after process loss, the pre-privilege startup guard instead
 disables its HOME surfaces immediately and retains a `STARTUP_RELINQUISHED`
 record solely for secondary-handler restoration. During normal
@@ -3973,7 +4027,7 @@ close the role handoff does not disable Activity components: the `RELEASING`
 record retains ownership of the remaining surface cleanup until the close
 coordinator finishes task, host and display teardown. It then disables the
 components and clears the lease. A later cleanup failure never claims HOME for
-MagicDesk again. Unexpected display loss outside an explicit transition releases
+MaterialDesk again. Unexpected display loss outside an explicit transition releases
 the lost workspace's membership; only the last loss restores the role and
 disables the surfaces without waiting for a UI callback.
 
@@ -3984,7 +4038,7 @@ desktop session stays closed rather than resumed. Close alone never removes
 the display. Failures remain diagnostic
 errors; they never reopen input routing or migration protection.
 
-Physical display removal, **Close desktop**, and **Exit MagicDesk** share the
+Physical display removal, **Close desktop**, and **Exit MaterialDesk** share the
 common cleanup path:
 
 - hand HOME back to the package saved by the lease only for the last workspace;
@@ -3998,7 +4052,7 @@ common cleanup path:
 - close display-scoped panel windows and stop task observation;
 - stop phone-display streams;
 - restore caption privacy and display geometry ownership;
-- restore vendor hardware settings changed by MagicDesk;
+- restore vendor hardware settings changed by MaterialDesk;
 - remember the owned display before Nubia can move its desktop host to display
   0, then normalize user tasks that WMShell still indexes under the removed
   wired or Miracast display;
@@ -4024,9 +4078,9 @@ completed request, and its late callback cannot affect a newer request or sessio
 
 ## Window Transitions
 
-MagicDesk operates on exact task IDs. Windowed launches and restores use native
+MaterialDesk operates on exact task IDs. Windowed launches and restores use native
 WMShell desktop transitions when available. Snap and maximize reserve the
-MagicDesk taskbar; true fullscreen does not.
+MaterialDesk taskbar; true fullscreen does not.
 
 Native caption controls remain opaque. A new full-height freeform observation
 can trigger vertical work-area correction. A transition from confirmed full
@@ -4054,7 +4108,7 @@ signature; a required `deskId` is not guessed. Otherwise launches use the existi
 `WindowContainerTransaction` path. Phone recovery uses the advertised
 `moveTaskOutOfDesk` when the one-task entry operation is absent, preserving its
 postconditions for fullscreen mode and repository cleanup. This does not create,
-activate or remove Android desks, or alter MagicDesk's fullscreen-plane ownership.
+activate or remove Android desks, or alter MaterialDesk's fullscreen-plane ownership.
 Protocol parsing is immutable and does not execute commands. Native launch keeps
 the status-bar passthrough transport; phone recovery keeps the window-shell
 transport and its cancellation boundary. A failed available operation is not
@@ -4086,14 +4140,14 @@ starts a timer of its own. Attempts are keyed by task, profile-scoped applicatio
 density, so an unsupported or rejected override cannot become a retry loop.
 Observer reconnection, a profile edit, or a display-density change creates a
 new bounded attempt. When a task leaves the desktop or the session closes,
-MagicDesk clears its task and plane overrides to Android's inherited density.
+MaterialDesk clears its task and plane overrides to Android's inherited density.
 
-MagicDesk temporarily owns Android's HOME role while any Desktop is active.
+MaterialDesk temporarily owns Android's HOME role while any Desktop is active.
 The primary `PhoneHomeActivity` keeps the same identity across workspace changes;
 its content follows local Desktop residency.
 The crash-recovery lease is an exact, versioned snapshot. An incomplete or
 unsupported lease is discarded by startup recovery rather than interpreted as
-state from an older MagicDesk build.
+state from an older MaterialDesk build.
 For an external session, `DesktopActivity` is launched and verified as the root
 secondary HOME task on the selected desktop display. The desktop host is an
 opaque, display-sized fullscreen Activity; it
@@ -4121,7 +4175,7 @@ normal background lifecycle. Minimizing reorders the active task below the
 host and then focuses the next visible task, or the host when no window
 remains. This requires no timer, lifecycle spoofing, or custom window layer.
 
-Application-requested immersive mode is reported by the task watcher. MagicDesk
+Application-requested immersive mode is reported by the task watcher. MaterialDesk
 hides its shell and lets the same Activity enter true fullscreen. Leaving
 immersive mode restores the prior desktop geometry. Per-task transition state
 distinguishes entry from restoration so a firmware-driven early return to
@@ -4158,7 +4212,7 @@ recreates the Activity. Details and rejected alternatives are in
 Hardware events travel through Android's physical devices and their explicit
 desktop display associations. Android owns repeat, modifiers, cursor motion,
 acceleration, hover, dragging and secondary-button semantics.
-`DesktopShortcutService` consumes only MagicDesk shortcuts; each physical
+`DesktopShortcutService` consumes only MaterialDesk shortcuts; each physical
 keyboard has its own `KeyboardShortcutStateMachine`. Consumed key-down/up
 pairs remain balanced across modifier release and repeated keys. Unplugging a
 keyboard cancels its pending Alt+Tab selection.
@@ -4196,7 +4250,7 @@ touchpads use Android's separate touchpad-speed setting.
 
 ## Phone Screen And Touch Panel
 
-MagicDesk uses the shell DisplayManager `power-off 0` contract. A heartbeat-owned
+MaterialDesk uses the shell DisplayManager `power-off 0` contract. A heartbeat-owned
 `PhoneDisplayGuard` probes and uses the platform's matching restore operation
 (`power-on` on Android 15 or `power-reset` on Android 16) after normal or
 abnormal teardown.
@@ -4216,7 +4270,7 @@ Close returns HOME, before restoring phone power. See
 `docs/nubia-vendor-audit.md` for the firmware evidence and verification scope.
 The phone-power guard acquires shared background-work protection before turning
 the phone display off, and releases it after restoration. `ShellBackgroundWork`
-owns task observation and freezer sessions for MagicDesk and
+owns task observation and freezer sessions for MaterialDesk and
 application UIDs, so HOME release does not remove host protection prematurely.
 Overlapping automation work retains its own claims. No persistent freezer whitelist
 is installed. The optional Nubia phone-UI and background-work components are
@@ -4228,12 +4282,53 @@ phone notification or desktop controls. Its relative-motion path uses the
 shared native mouse relay described above and does not require a firmware
 absolute-position API.
 
+`TouchpadGestureRecognizer` interprets contacts with Windows precision-touchpad
+semantics and has no Android view dependency: taps and multi-finger taps,
+tap-and-drag, rail-locked two-finger scrolling on both wheel axes, and
+three-finger swipes. Scrolling reaches Android as high-resolution wheel units
+(1/120 detent) through the native relay's `scroll-hr` command, which also
+reports whole legacy detents. Lifting two moving fingers continues with
+`TouchpadKineticScroll` momentum on the axis the scroll was locked to,
+advanced by `Choreographer` frames and stopped by the next touch. A pinch is
+recognized when the finger spread changes at least 0.6 times as much as the
+centroid moves, which includes pinching with one resting finger. It becomes a
+real two-finger touch pinch at the cursor: `TouchpadPinchInjector` in the
+privileged service injects display-targeted touchscreen events whose finger
+distance follows the touchpad's spread ratio, so every application that zooms
+by touch zooms by touchpad. The cursor position comes from
+`FrameworkPointerPositionMonitor`, a gesture monitor on the input display that
+copies mouse events without consuming them; before the mouse moves, the pinch
+is centered on the display. A quick horizontal two-finger flick clicks the
+Back or Forward mouse button. A touchpad
+press-and-hold holds the primary button so applications receive their own long
+press (for example Telegram's message text selection) and moving then drags. Swipes and taps call the same runtime operations as
+keyboard shortcuts (`toggleTaskOverview`, `toggleDesktopWorkspace`, the Alt+Tab
+advance/finish/cancel sequence, Start and notifications), so they fail
+explicitly without a Desktop on the selected display. Event timestamps bound
+taps; the recognizer never waits. Clicks are taps; the touchpad has no
+on-screen mouse buttons.
+
+The touchpad guards against accidental exits without taking system state:
+immersive system bars require a second edge swipe, the surface requests
+gesture exclusion, the window keeps the screen on while visible, and
+`TouchpadExitGuard` closes only on a second Back within its confirmation
+window. The close button requires a deliberate hold scheduled through
+`RuntimeDelays`; an accessibility long-click closes it directly.
+
+Because the touchpad is used while looking at another display, its phone
+screen is pure black with outlined controls. `TouchpadScreenGuard` owns the
+burn-in and battery policy: after an idle period the lit controls fade and the
+window's backlight override drops to minimum until the next touch, and the
+layout shifts through a small pixel pattern. Both timers are
+`RuntimeDelays.Reason.DISPLAY_PROTECTION` schedules owned by the visible
+Activity and cancelled when it stops; neither changes system settings.
+
 Pointer speed uses Android's standard `Settings.System.pointer_speed` range and
-is observed for changes made outside MagicDesk.
+is observed for changes made outside MaterialDesk.
 
 ## Desktop Display Recording
 
-MagicDesk resolves the active desktop's logical display to its physical display
+MaterialDesk resolves the active desktop's logical display to its physical display
 ID and records it with Android's system `screenrecord --display-id` command.
 Video capture is a platform-independent baseline and does not depend on an
 internal-audio backend. The Nubia driver can additionally use the firmware's
@@ -4264,7 +4359,7 @@ A privileged service is an `app_process` with an Application context but no
 bound `ActivityThread.AppBindData`. Android 16's `MediaRecorder(Context)` passes
 `ActivityThread.currentPackageName()` into JNI, where a null value aborts the
 entire process. `MediaRecorderAudioRecorder` temporarily supplies the matching
-MagicDesk or `com.android.shell` application identity only while constructing
+MaterialDesk or `com.android.shell` application identity only while constructing
 the recorder, then immediately restores the prior ActivityThread state. This
 shared recorder supports both the standard microphone and platform-provided
 audio sources.
@@ -4287,7 +4382,7 @@ roughly 100 ms.
 
 Hardware monitoring reads firmware-exposed thermal values. Fan and liquid-pump
 actions use the stock `NBFan` settings policy; bypass charging uses the stock
-global setting observed by the vendor service. MagicDesk captures each original
+global setting observed by the vendor service. MaterialDesk captures each original
 value before its first write and restores only state it owns on System, exit,
 or interrupted-session recovery.
 
@@ -4323,7 +4418,7 @@ value off the UI thread. Changes require shell access and no active/preparing
 desktop or retained HOME lease. There is no session override, saved preference
 copy, startup write, or required-setup reboot marker. The UI advises reconnecting
 the external display; some firmware may require a restart. Neither is a startup
-gate in MagicDesk. Close Desktop leaves the value unchanged;
+gate in MaterialDesk. Close Desktop leaves the value unchanged;
 Restore defaults removes the override. The flag affects external HOME, system
 decorations and input policy, but does not prove correct physical-input routing.
 Physical-input routing is owned by the shared Android input session.
@@ -4359,17 +4454,17 @@ actual window behavior.
 
 Normal first-run UI exposes only the next required user action: connect and
 authorize the selected privilege backend, prepare the device, restart, or start
-MagicDesk. Display selection, individual setting values, firmware identity,
+MaterialDesk. Display selection, individual setting values, firmware identity,
 Diagnostics, and restoration remain in the manually opened **Device setup**
 screen.
 
 Desktop panels and dialogs use ordinary application windows and require no
 display-over-other-apps permission. Their session-owned chrome host is excluded
-from Recents and all MagicDesk application-task policy.
+from Recents and all MaterialDesk application-task policy.
 
 The boot ID marks configuration that still requires reboot. Required Android
 settings are marked before their command because it can partially succeed;
-optional properties are marked only after a verified change. MagicDesk never
+optional properties are marked only after a verified change. MaterialDesk never
 reboots automatically and has no boot receiver. A successful audit after boot
 enters the control panel without flashing setup UI.
 
@@ -4377,7 +4472,7 @@ enters the control panel without flashing setup UI.
 runtime, normalizes stale phone desktop tasks, removes the three global
 desktop-windowing overrides, attempts to clear the two allowlisted persistent
 properties, and resets primary-display size/density/scaling overrides. Removing overrides
-lets the firmware supply its defaults and remains usable after MagicDesk has
+lets the firmware supply its defaults and remains usable after MaterialDesk has
 been uninstalled and installed again. Diagnostics and background audits never
 authorize a runtime session or start services.
 
@@ -4389,7 +4484,7 @@ repetitions, including interleaved events. An evicted signature can be recorded
 again. Exact
 duplicates left by earlier process runs are also collapsed when the report is
 built. The issue report includes firmware identity, displays, external input,
-desktop settings, service UID/domain/capability probes, and MagicDesk-only
+desktop settings, service UID/domain/capability probes, and MaterialDesk-only
 logcat. It excludes user files, accounts, notification content, clipboard, and
 the installed-app catalog.
 
@@ -4398,9 +4493,9 @@ ready sessions, refresh failures and the last routing display. The virtual mouse
 keeps aggregate protocol and write-error counters; the shortcut service reports
 connection state, routed device IDs and command counts. Neither records key
 codes or typed text. At the start of explicit compatibility-report
-generation, MagicDesk requests one native statistics frame and one bounded
+generation, MaterialDesk requests one native statistics frame and one bounded
 `FrameworkInputSnapshotSource` snapshot. The resulting report compares owned
-MagicDesk ports with current InputManager associations and records the observed
+MaterialDesk ports with current InputManager associations and records the observed
 cursor observation with its source-supplied display identity (unknown when not
 provided), without refreshing the viewport or attempting pointer recovery.
 No diagnostic input polling runs during normal desktop use. The
@@ -4424,13 +4519,13 @@ The smoke script starts that Activity and reads the normal bounded result file;
 it does not replace the app process with instrumentation, so the runtime and an
 enabled MCP server remain alive. It is intentionally not run by host-only CI.
 
-Desktop wallpaper loading follows the same fail-open rule. By default MagicDesk
-decodes its bundled `drawable-nodpi/desktop_wallpaper.webp` resource. MagicDesk Files offers **Set as
+Desktop wallpaper loading follows the same fail-open rule. By default MaterialDesk
+decodes its bundled `drawable-nodpi/desktop_wallpaper.webp` resource. MaterialDesk Files offers **Set as
 desktop wallpaper** only for local image files. The selected file is reopened
 through its verified device/inode identity, decoded far enough to validate the
 image, and atomically copied to
 `/storage/emulated/0/Desktop/.magicdesk/wallpaper`;
-selecting **Use MagicDesk wallpaper** removes that override. An unavailable or
+selecting **Use MaterialDesk wallpaper** removes that override. An unavailable or
 undecodable custom image falls back to the last valid custom cache or the
 bundled background and
 records one compatibility event per distinct failure instead of changing
@@ -4519,13 +4614,13 @@ tests cannot prove firmware behavior.
 
 The Gradle project has seven modules:
 
-- `app`: main MagicDesk APK;
+- `app`: main MaterialDesk APK;
 - `hidden-api-stubs`: compile-only framework signatures;
 - `kernel-fixes`: independent optional APK;
 - `terminal-emulator`: locally maintained terminal parser and screen model;
 - `hosted-runtime`: shared graphical-process context, retained-server lifecycle,
   Vulkan/software graphics, frame transport and Android presentation;
-- `x11-runtime`: MagicDesk's Android X11 runtime and JNI adapter, linking the
+- `x11-runtime`: MaterialDesk's Android X11 runtime and JNI adapter, linking the
   fork's native engine. No upstream Java or compile-only X11 stubs are used;
 - `wayland-runtime`: the embedded wlroots compositor, immutable frame
   transport, Android presenter and authenticated client-FD handoff. wlroots and
@@ -4582,7 +4677,7 @@ release variants without signing secrets. Both routes run
 `scripts/verify-apks.sh` to enforce the main and Kernel Fixes package boundaries.
 
 For a `v*` tag, the release workflow loads signing credentials through
-`gradle/release-signing.gradle`, signs only the main MagicDesk APK, verifies its
+`gradle/release-signing.gradle`, signs only the main MaterialDesk APK, verifies its
 certificate and package boundary, emits checksums, and publishes the APK with its
 corresponding source archive as the tagged release. Source packaging runs before
 native compilation and includes recursively pinned submodules and their build

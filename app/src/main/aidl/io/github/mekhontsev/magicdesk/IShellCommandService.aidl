@@ -496,4 +496,6 @@ interface IShellCommandService {
     void resizeTaskBounds(int displayId, int taskId, in Rect bounds) = 150;
     String getSystemNightMode(int userId) = 151;
     void setSystemNightMode(int userId, String mode) = 152;
+    // Phone-touchpad pinch as a touch pinch at the cursor; see TouchpadPinchInjector.
+    boolean injectTouchpadPinch(int displayId, int phase, float scale) = 153;
 }

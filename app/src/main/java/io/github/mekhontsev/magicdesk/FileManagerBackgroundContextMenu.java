@@ -54,15 +54,15 @@ final class FileManagerBackgroundContextMenu {
         };
         FileItemContextMenu.addAction(
                 panel, ui, R.string.action_new_file,
-                DesktopUiFactory.COLOR_CYAN, true,
+                DesktopUiFactory.COLOR_ACCENT, true,
                 dismiss, actions::newFile);
         FileItemContextMenu.addAction(
                 panel, ui, R.string.action_new_folder,
-                DesktopUiFactory.COLOR_CYAN, true,
+                DesktopUiFactory.COLOR_ACCENT, true,
                 dismiss, actions::newFolder);
         FileItemContextMenu.addAction(
                 panel, ui, R.string.action_new_terminal_application,
-                DesktopUiFactory.COLOR_CYAN, true,
+                DesktopUiFactory.COLOR_ACCENT, true,
                 dismiss, actions::newTerminalApplication);
         FileItemContextMenu.addAction(
                 panel, ui, R.string.file_manager_import_files,

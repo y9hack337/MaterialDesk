@@ -170,6 +170,7 @@ public final class QuickControlsPresentationTest {
                     int left, top, width, height;
                     boolean requested;
                     boolean isRequested(Panel panel) { return requested; }
+                    boolean isShowing(Panel panel) { return requested; }
                     boolean show(Panel panel, ShellPanelPlacement placement, boolean focus, String title) {
                         Rect area = activity.getDesktopPanelAreaBounds();
                         ShellBounds bounds = new ShellBounds(area.left, area.top, area.right, area.bottom);
@@ -207,6 +208,7 @@ public final class QuickControlsPresentationTest {
                 int renders;
                 int dp(int value) { return value * mUi.density; }
                 void render() { renders++; }
+                void refreshQuickTiles() { }
                 public static void verify() {
                     Fixture f = new Fixture();
                 """ + scenario + "}\n" + RuntimeSourceFixture.methods("SystemPanelController", "toggle"),

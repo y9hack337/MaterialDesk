@@ -11,7 +11,6 @@ import android.view.MotionEvent;
 import android.view.View;
 import android.view.ViewConfiguration;
 import android.view.ViewGroup;
-import android.widget.Button;
 import android.widget.FrameLayout;
 import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
@@ -39,13 +38,19 @@ final class TaskbarController {
             AndroidDesktopActionDispatcher.createContentScope();
 
     private LinearLayout mTaskbar;
-    private Button mStartButton;
+    private View mStartButton;
     private LinearLayout mPins;
     private HorizontalScrollView mTaskViewport;
+    /** Mirrors the tray width so the dock is centered on the display. */
+    private View mDockBalance;
+    /** Leading taskbar entries that are pinned applications. */
+    private int mPinnedItemCount;
+    /** Content of the rendered icons; unchanged snapshots skip rebuilding. */
+    private String mPinSignature = "";
     private TextView mKeyboardLayout;
     private final InputMethodMenuController mInputMethodMenu;
     private final TaskbarOverflowController mOverflow;
-    private TextView mBatteryStatus;
+    private BatteryIndicatorView mBatteryStatus;
     private ImageButton mSystemButton;
     private ImageButton mPhoneScreenButton;
     private Intent mLastBatteryIntent;
@@ -134,20 +139,22 @@ final class TaskbarController {
         taskbar.setOrientation(LinearLayout.HORIZONTAL);
         taskbar.setGravity(Gravity.CENTER_VERTICAL);
         taskbar.setPadding(
-                desktopDp(10, 4),
-                desktopDp(8, 4),
-                desktopDp(10, 4),
-                desktopDp(8, 4));
-        taskbar.setBackground(mUi.rounded(
-                DesktopUiFactory.COLOR_PANEL,
-                0,
-                DesktopUiFactory.COLOR_PANEL_ALT));
+                desktopDp(12, 4),
+                desktopDp(6, 3),
+                desktopDp(12, 4),
+                desktopDp(6, 3));
+        taskbar.setBackgroundColor(DesktopUiFactory.COLOR_PANEL);
 
-        final Button start = mUi.actionButton(
+        mDockBalance = new View(mActivity);
+        taskbar.addView(mDockBalance, new LinearLayout.LayoutParams(
+                0, LinearLayout.LayoutParams.MATCH_PARENT));
+
+        // Material dock: Start opens the application drawer from its leading
+        // icon, as on Android's desktop taskbar.
+        final ImageButton start = mUi.taskbarIconButton(
+                R.drawable.ic_app_drawer,
                 R.string.action_start,
-                DesktopUiFactory.COLOR_CYAN);
-        start.setTextSize(14);
-        start.setTypeface(android.graphics.Typeface.DEFAULT_BOLD);
+                mActivity.isCompactDesktopPreview());
         start.setOnClickListener(view -> mActivity.toggleStartMenu());
         start.setOnLongClickListener(view -> {
             final int[] location = new int[2];
@@ -162,9 +169,6 @@ final class TaskbarController {
                 start, "taskbar.start", "button",
                 mActivity.getString(R.string.action_start));
         mStartButton = start;
-        taskbar.addView(start, new LinearLayout.LayoutParams(
-                desktopDp(108, 72),
-                LinearLayout.LayoutParams.MATCH_PARENT));
 
         final HorizontalScrollView taskScroll =
                 new HorizontalScrollView(mActivity);
@@ -178,18 +182,50 @@ final class TaskbarController {
             }
         });
         mTaskViewport = taskScroll;
+        final LinearLayout dock = new LinearLayout(mActivity);
+        dock.setOrientation(LinearLayout.HORIZONTAL);
+        dock.setGravity(Gravity.CENTER);
+        dock.addView(start, new LinearLayout.LayoutParams(
+                dockItemWidth(),
+                LinearLayout.LayoutParams.MATCH_PARENT));
         mPins = new LinearLayout(mActivity);
         mPins.setOrientation(LinearLayout.HORIZONTAL);
         mPins.setGravity(Gravity.CENTER_VERTICAL);
-        taskScroll.addView(mPins, new HorizontalScrollView.LayoutParams(
+        dock.addView(mPins, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.MATCH_PARENT));
+        taskScroll.addView(dock, new HorizontalScrollView.LayoutParams(
                 HorizontalScrollView.LayoutParams.WRAP_CONTENT,
                 HorizontalScrollView.LayoutParams.MATCH_PARENT));
         final LinearLayout.LayoutParams pinsParams =
                 new LinearLayout.LayoutParams(
                         0, LinearLayout.LayoutParams.MATCH_PARENT, 1);
         pinsParams.setMargins(
-                desktopDp(10, 4), 0, desktopDp(10, 4), 0);
+                desktopDp(8, 4), 0, desktopDp(8, 4), 0);
         taskbar.addView(taskScroll, pinsParams);
+
+        final LinearLayout tray = new LinearLayout(mActivity);
+        tray.setOrientation(LinearLayout.HORIZONTAL);
+        tray.setGravity(Gravity.CENTER_VERTICAL);
+        tray.addOnLayoutChangeListener((view,
+                left, top, right, bottom,
+                oldLeft, oldTop, oldRight, oldBottom) -> {
+            if (right - left != oldRight - oldLeft) {
+                balanceDock(right - left);
+            }
+        });
+        taskbar.addView(tray, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.WRAP_CONTENT,
+                LinearLayout.LayoutParams.MATCH_PARENT));
+
+        final ImageButton screenshot = taskbarButton(
+                R.drawable.ic_camera,
+                R.string.region_screenshot_title);
+        screenshot.setOnClickListener(view -> mActivity.startRegionScreenshot());
+        mActivity.registerAutomationUiElement(
+                screenshot, "taskbar.screenshot", "button",
+                mActivity.getString(R.string.region_screenshot_title));
+        addButton(tray, screenshot);
 
         final ImageButton showDesktop = taskbarButton(
                 R.drawable.ic_show_desktop,
@@ -199,7 +235,7 @@ final class TaskbarController {
         mActivity.registerAutomationUiElement(
                 showDesktop, "taskbar.show_desktop", "button",
                 mActivity.getString(R.string.action_show_desktop));
-        addButton(taskbar, showDesktop);
+        addButton(tray, showDesktop);
 
         final ImageButton taskOverview = taskbarButton(
                 R.drawable.ic_file_new_window,
@@ -209,12 +245,12 @@ final class TaskbarController {
         mActivity.registerAutomationUiElement(
                 taskOverview, "taskbar.open_tasks", "button",
                 mActivity.getString(R.string.action_open_tasks));
-        addButton(taskbar, taskOverview);
+        addButton(tray, taskOverview);
 
         final View notifications =
                 mActivity.notifications().createTaskbarButton(
                         mActivity.isCompactDesktopPreview());
-        taskbar.addView(
+        tray.addView(
                 notifications,
                 new LinearLayout.LayoutParams(
                         desktopDp(46, 38),
@@ -229,21 +265,22 @@ final class TaskbarController {
                 mActivity.isCompactDesktopPreview() ? 11 : 13,
                 1,
                 android.util.TypedValue.COMPLEX_UNIT_SP);
-        mKeyboardLayout.setTypeface(
-                android.graphics.Typeface.DEFAULT_BOLD);
+        mKeyboardLayout.setTypeface(DesktopUiFactory.medium());
         mKeyboardLayout.setGravity(Gravity.CENTER);
         mKeyboardLayout.setClickable(true);
         mKeyboardLayout.setFocusable(true);
-        mKeyboardLayout.setBackground(mUi.rounded(
-                DesktopUiFactory.COLOR_PANEL_ALT,
-                desktopDp(8, 6),
-                DesktopUiFactory.COLOR_PANEL_ALT));
+        mKeyboardLayout.setBackground(mUi.interactiveRounded(
+                DesktopUiFactory.COLOR_PANEL_FOCUS,
+                dp(DesktopUiFactory.SHAPE_FULL_DP),
+                DesktopUiFactory.COLOR_ACCENT));
         mKeyboardLayout.setOnClickListener(mInputMethodMenu::toggle);
         mKeyboardLayout.setEnabled(
                 ShellAccess.isReady());
-        taskbar.addView(mKeyboardLayout, new LinearLayout.LayoutParams(
-                desktopDp(48, 38),
-                LinearLayout.LayoutParams.MATCH_PARENT));
+        final LinearLayout.LayoutParams keyboardParams = new LinearLayout.LayoutParams(
+                desktopDp(44, 36),
+                desktopDp(30, 24));
+        keyboardParams.setMargins(desktopDp(4, 2), 0, desktopDp(4, 2), 0);
+        tray.addView(mKeyboardLayout, keyboardParams);
         if (mActivity.isCompactDesktopPreview()) {
             mKeyboardLayout.setVisibility(View.GONE);
         }
@@ -258,7 +295,7 @@ final class TaskbarController {
         mPhoneScreenButton.setOnClickListener(view ->
                 mActivity.togglePhoneScreen());
         mPhoneScreenButton.setEnabled(false);
-        addButton(taskbar, mPhoneScreenButton);
+        addButton(tray, mPhoneScreenButton);
         if (mActivity.isCompactDesktopPreview()
                 || mActivity.getCurrentDisplayId() == Display.DEFAULT_DISPLAY) {
             mPhoneScreenButton.setVisibility(View.GONE);
@@ -275,14 +312,10 @@ final class TaskbarController {
         mActivity.registerAutomationUiElement(
                 mSystemButton, "taskbar.quick_controls", "button",
                 mActivity.getString(R.string.section_quick_controls));
-        addButton(taskbar, mSystemButton);
+        addButton(tray, mSystemButton);
 
-        mBatteryStatus = new TextView(mActivity);
-        mBatteryStatus.setTextColor(DesktopUiFactory.COLOR_MUTED);
-        mBatteryStatus.setTextSize(
-                mActivity.isCompactDesktopPreview() ? 10 : 12);
-        mBatteryStatus.setGravity(Gravity.CENTER);
-        mBatteryStatus.setSingleLine(true);
+        mBatteryStatus = new BatteryIndicatorView(
+                mActivity, mActivity.isCompactDesktopPreview());
         mBatteryStatus.setClickable(true);
         mBatteryStatus.setFocusable(true);
         mBatteryStatus.setOnClickListener(view ->
@@ -290,22 +323,23 @@ final class TaskbarController {
         mActivity.registerAutomationUiElement(
                 mBatteryStatus, "taskbar.battery", "button",
                 mActivity.getString(R.string.battery_status_unknown));
-        taskbar.addView(mBatteryStatus, new LinearLayout.LayoutParams(
-                desktopDp(58, 44),
+        mBatteryStatus.setBackground(mUi.stateLayerBackground(
+                dp(DesktopUiFactory.SHAPE_FULL_DP)));
+        tray.addView(mBatteryStatus, new LinearLayout.LayoutParams(
+                desktopDp(60, 48),
                 LinearLayout.LayoutParams.MATCH_PARENT));
 
         final TextClock clock = new TextClock(mActivity);
         clock.setFormat24Hour("HH:mm");
         clock.setFormat12Hour("HH:mm");
         clock.setTextColor(DesktopUiFactory.COLOR_TEXT);
-        clock.setTextSize(mActivity.isCompactDesktopPreview() ? 12 : 16);
+        clock.setTextSize(mActivity.isCompactDesktopPreview() ? 12 : 15);
+        clock.setTypeface(DesktopUiFactory.medium());
         clock.setGravity(Gravity.CENTER);
         clock.setClickable(true);
         clock.setFocusable(true);
-        clock.setBackground(mUi.rounded(
-                DesktopUiFactory.COLOR_PANEL_ALT,
-                desktopDp(8, 6),
-                DesktopUiFactory.COLOR_PANEL_ALT));
+        clock.setBackground(mUi.stateLayerBackground(
+                dp(DesktopUiFactory.SHAPE_FULL_DP)));
         clock.setContentDescription(
                 mActivity.getString(R.string.action_calendar));
         clock.setTooltipText(mActivity.getString(R.string.action_calendar));
@@ -313,8 +347,8 @@ final class TaskbarController {
         mActivity.registerAutomationUiElement(
                 clock, "taskbar.clock", "button",
                 mActivity.getString(R.string.action_calendar));
-        taskbar.addView(clock, new LinearLayout.LayoutParams(
-                desktopDp(72, 50),
+        tray.addView(clock, new LinearLayout.LayoutParams(
+                desktopDp(64, 50),
                 LinearLayout.LayoutParams.MATCH_PARENT));
         mTaskbar = taskbar;
         mActivity.registerAutomationUiElement(
@@ -329,6 +363,8 @@ final class TaskbarController {
         mStartButton = null;
         mPins = null;
         mTaskViewport = null;
+        mDockBalance = null;
+        mPinSignature = "";
         mOverflow.release();
         mKeyboardLayout = null;
         mInputMethodMenu.release();
@@ -361,21 +397,52 @@ final class TaskbarController {
         if (mPins == null) {
             return;
         }
-        mPins.removeAllViews();
         final List<TaskbarOverflowController.Entry> items =
                 collectTaskbarItems(apps);
-        final int itemWidth = desktopDp(48, 36);
+        final int itemWidth = dockItemWidth();
+        // The dock shares the viewport with Start and the pinned divider.
         final int availableWidth = mTaskViewport == null
-                ? 0 : mTaskViewport.getWidth();
+                ? 0 : Math.max(0, mTaskViewport.getWidth()
+                        - dockItemWidth() - dockDividerWidth());
         final int visibleCount = TaskbarOverflowPolicy.visibleItemCount(
                 items.size(), availableWidth, itemWidth);
         mOverflow.setItems(items.subList(visibleCount, items.size()));
+        // Task snapshots arrive often; rebuilding unchanged icons costs frames
+        // and would cancel a click or drag that is in progress.
+        final String signature = pinSignature(items, visibleCount);
+        if (signature.equals(mPinSignature) && mPins.getChildCount() > 0) {
+            return;
+        }
+        mPinSignature = signature;
+        mPins.removeAllViews();
         for (int index = 0; index < visibleCount; index++) {
+            if (index == mPinnedItemCount && index > 0) {
+                addDockDivider();
+            }
             addPin(items.get(index));
         }
         if (visibleCount < items.size()) {
             addOverflowButton();
         }
+    }
+
+    /** Everything a rendered taskbar icon or its actions depend on. */
+    private String pinSignature(
+            final List<TaskbarOverflowController.Entry> items, final int visibleCount) {
+        final StringBuilder signature = new StringBuilder()
+                .append(visibleCount).append('/').append(mPinnedItemCount);
+        for (final TaskbarOverflowController.Entry item : items) {
+            signature.append('|').append(System.identityHashCode(item.app));
+            final TaskRepository.TaskEntry task = item.task;
+            if (task != null) {
+                signature.append(':').append(task.taskId)
+                        .append(':').append(task.displayId)
+                        .append(':').append(task.windowingMode)
+                        .append(':').append(task.active)
+                        .append(':').append(task.visible);
+            }
+        }
+        return signature.toString();
     }
 
     private List<TaskbarOverflowController.Entry> collectTaskbarItems(
@@ -388,6 +455,7 @@ final class TaskbarController {
         final List<TaskRepository.TaskEntry> orderedTasks =
                 getOrderedTaskbarTasks();
 
+        mPinnedItemCount = 0;
         for (final AppReference reference : pinnedApps) {
             final AppItem app = LauncherAppRepository.find(
                     availableApps, reference);
@@ -406,6 +474,7 @@ final class TaskbarController {
             }
         }
 
+        mPinnedItemCount = items.size();
         for (final TaskRepository.TaskEntry task : orderedTasks) {
             if (renderedTaskIds.contains(
                     Integer.valueOf(task.taskId))) {
@@ -529,7 +598,7 @@ final class TaskbarController {
                 : R.drawable.ic_phone_screen_off);
         mPhoneScreenButton.setColorFilter(
                 phoneScreenOff
-                        ? DesktopUiFactory.COLOR_CYAN
+                        ? DesktopUiFactory.COLOR_ACCENT
                         : DesktopUiFactory.COLOR_TEXT);
         mPhoneScreenButton.setContentDescription(
                 mActivity.getString(actionResId));
@@ -548,11 +617,13 @@ final class TaskbarController {
         }
         final boolean taskControl =
                 ShellAccess.isReady();
-        final int color = taskControl && shortcutsReady
-                ? DesktopUiFactory.COLOR_CYAN
-                : (taskControl
-                        ? DesktopUiFactory.COLOR_AMBER
-                        : DesktopUiFactory.COLOR_MUTED);
+        // The icon keeps the ordinary taskbar color; a missing keyboard
+        // shortcut service is only a small amber badge.
+        final int color = taskControl
+                ? DesktopUiFactory.COLOR_TEXT
+                : DesktopUiFactory.COLOR_MUTED;
+        mSystemButton.setForeground(taskControl && !shortcutsReady
+                ? attentionBadge() : null);
         final String description = mActivity.getString(
                 R.string.system_status_description,
                 ShellAccess.statusLabel(),
@@ -563,6 +634,21 @@ final class TaskbarController {
         mSystemButton.setColorFilter(color);
         mSystemButton.setContentDescription(description);
         mSystemButton.setTooltipText(description);
+    }
+
+    private android.graphics.drawable.Drawable attentionBadge() {
+        final android.graphics.drawable.GradientDrawable dot =
+                new android.graphics.drawable.GradientDrawable();
+        dot.setShape(android.graphics.drawable.GradientDrawable.OVAL);
+        dot.setColor(DesktopUiFactory.COLOR_AMBER);
+        final android.graphics.drawable.LayerDrawable badge =
+                new android.graphics.drawable.LayerDrawable(
+                        new android.graphics.drawable.Drawable[] {dot});
+        badge.setLayerSize(0, dp(7), dp(7));
+        badge.setLayerGravity(0, Gravity.TOP | Gravity.END);
+        badge.setLayerInsetTop(0, dp(9));
+        badge.setLayerInsetEnd(0, dp(9));
+        return badge;
     }
 
     void updateBattery(final Intent battery) {
@@ -588,15 +674,7 @@ final class TaskbarController {
                 status == BatteryManager.BATTERY_STATUS_CHARGING;
         final boolean full =
                 status == BatteryManager.BATTERY_STATUS_FULL;
-        mBatteryStatus.setText(percent < 0
-                ? mActivity.getString(R.string.battery_compact_unknown)
-                : mActivity.getString(
-                        R.string.battery_compact,
-                        Integer.valueOf(percent)));
-        mBatteryStatus.setTextColor(
-                charging || mChargeSeparationEnabled
-                        ? DesktopUiFactory.COLOR_CYAN
-                        : DesktopUiFactory.COLOR_TEXT);
+        mBatteryStatus.setLevel(percent, charging, mChargeSeparationEnabled);
         final String state = mActivity.getString(
                 charging
                         ? R.string.battery_state_charging
@@ -628,8 +706,46 @@ final class TaskbarController {
         mPins.addView(
                 createPin(taskbarItem),
                 new LinearLayout.LayoutParams(
-                        desktopDp(48, 36),
+                        dockItemWidth(),
                         LinearLayout.LayoutParams.MATCH_PARENT));
+    }
+
+    /** Separates pinned applications from other running applications. */
+    private void addDockDivider() {
+        final View divider = new View(mActivity);
+        divider.setBackground(DesktopUiFactory.filled(
+                DesktopUiFactory.COLOR_OUTLINE_VARIANT, dp(1)));
+        final LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                dp(1), desktopDp(24, 18));
+        params.gravity = Gravity.CENTER_VERTICAL;
+        final int margin = (dockDividerWidth() - dp(1)) / 2;
+        params.setMargins(margin, 0, margin, 0);
+        mPins.addView(divider, params);
+    }
+
+    private int dockItemWidth() {
+        return desktopDp(48, 36);
+    }
+
+    private int dockDividerWidth() {
+        return desktopDp(17, 9);
+    }
+
+    private void balanceDock(final int trayWidth) {
+        if (mDockBalance == null || mTaskbar == null) {
+            return;
+        }
+        // Center the dock on the display unless that would crowd its icons.
+        final int width = Math.min(trayWidth, mTaskbar.getWidth() / 4);
+        final ViewGroup.LayoutParams params = mDockBalance.getLayoutParams();
+        if (params.width != width) {
+            params.width = width;
+            mDockBalance.post(() -> {
+                if (mDockBalance != null) {
+                    mDockBalance.setLayoutParams(params);
+                }
+            });
+        }
     }
 
     private View createPin(
@@ -637,40 +753,35 @@ final class TaskbarController {
         final AppItem app = taskbarItem.app;
         final TaskRepository.TaskEntry task = taskbarItem.task;
         final FrameLayout item = new FrameLayout(mActivity);
-        final int borderColor = task == null
-                ? DesktopUiFactory.COLOR_PANEL_ALT
-                : (task.active
-                        ? DesktopUiFactory.COLOR_AMBER
-                        : DesktopUiFactory.COLOR_CYAN);
-        item.setBackground(mUi.rounded(
-                DesktopUiFactory.COLOR_PANEL_ALT,
-                desktopDp(10, 8),
-                borderColor));
+        item.setBackground(mUi.stateLayerBackground(
+                dp(DesktopUiFactory.SHAPE_MEDIUM_DP)));
         item.setClickable(true);
         item.setFocusable(true);
 
         final ImageView icon = new ImageView(mActivity);
         icon.setImageDrawable(app.icon);
         icon.setPadding(
-                desktopDp(7, 5),
-                desktopDp(7, 5),
-                desktopDp(7, 5),
-                desktopDp(7, 5));
+                desktopDp(8, 5),
+                desktopDp(6, 4),
+                desktopDp(8, 5),
+                desktopDp(10, 7));
         item.addView(icon, new FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.MATCH_PARENT,
                 FrameLayout.LayoutParams.MATCH_PARENT));
 
         if (task != null) {
+            // Material running indicator: a dot, lengthened for the focused window.
             final View running = new View(mActivity);
-            running.setBackgroundColor(task.active
-                    ? DesktopUiFactory.COLOR_AMBER
-                    : DesktopUiFactory.COLOR_CYAN);
+            running.setBackground(DesktopUiFactory.filled(task.active
+                    ? DesktopUiFactory.COLOR_ACCENT
+                    : DesktopUiFactory.COLOR_MUTED,
+                    dp(DesktopUiFactory.SHAPE_FULL_DP)));
             final FrameLayout.LayoutParams runningParams =
                     new FrameLayout.LayoutParams(
-                            desktopDp(20, 14),
+                            task.active ? desktopDp(16, 12) : desktopDp(6, 5),
                             dp(3),
                             Gravity.BOTTOM | Gravity.CENTER_HORIZONTAL);
-            runningParams.setMargins(0, 0, 0, dp(2));
+            runningParams.setMargins(0, 0, 0, desktopDp(3, 2));
             item.addView(running, runningParams);
         }
 
@@ -786,7 +897,7 @@ final class TaskbarController {
     private void addOverflowButton() {
         mPins.addView(mOverflow.createButton(),
                 new LinearLayout.LayoutParams(
-                desktopDp(48, 36),
+                dockItemWidth(),
                 LinearLayout.LayoutParams.MATCH_PARENT));
     }
 
@@ -805,10 +916,10 @@ final class TaskbarController {
     }
 
     private void addButton(
-            final LinearLayout taskbar,
+            final LinearLayout tray,
             final ImageButton button) {
-        taskbar.addView(button, new LinearLayout.LayoutParams(
-                desktopDp(46, 38),
+        tray.addView(button, new LinearLayout.LayoutParams(
+                desktopDp(44, 36),
                 LinearLayout.LayoutParams.MATCH_PARENT));
     }
 

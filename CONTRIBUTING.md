@@ -1,6 +1,6 @@
 # Contributing
 
-MagicDesk uses Gradle as its project definition. Open the repository root in
+MaterialDesk uses Gradle as its project definition. Open the repository root in
 Android Studio, IntelliJ IDEA, or another Gradle-aware editor; do not open the
 `app` directory as a standalone project.
 
@@ -12,7 +12,7 @@ HOME ownership. Read [Runtime API levels](docs/runtime-api-levels.md) before
 changing shared prerequisites or using newer APIs.
 
 The project aims to support as many compatible devices and firmware versions
-as practical through one MagicDesk APK and one codebase. Prefer runtime
+as practical through one MaterialDesk APK and one codebase. Prefer runtime
 capability probing, shared Android behavior, and focused platform drivers over
 model checks, product flavors, or device-specific forks. A missing optional
 vendor feature should disable only that feature and remain visible in
@@ -208,8 +208,8 @@ runtime code.
 
 ## Licensing
 
-MagicDesk is distributed under GNU GPL version 3 (`GPL-3.0-only`).
-Contributions to MagicDesk use that license unless a file explicitly retains
+MaterialDesk is distributed under GNU GPL version 3 (`GPL-3.0-only`).
+Contributions to MaterialDesk use that license unless a file explicitly retains
 another compatible third-party license. Preserve upstream copyright and
 license notices. See [licensing and source availability](docs/licensing.md).
 

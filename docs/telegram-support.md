@@ -1,6 +1,6 @@
 # Telegram Support And Test Builds
 
-[MagicDesk Support Bot](https://t.me/MagicDeskSupportBot) lets you report a
+[MaterialDesk Support Bot](https://t.me/MagicDeskSupportBot) lets you report a
 problem, answer questions and try a proposed fix in one Telegram conversation.
 You do not need a GitHub account, a development environment or a local AI setup.
 The service uses GitHub Copilot to investigate reports and GitHub Actions to
@@ -8,7 +8,7 @@ build test APKs; it does not remotely control your phone or require MCP access.
 
 ## Send A Report
 
-1. Join the [MagicDesk Telegram community](https://t.me/magicdesk_android).
+1. Join the [MaterialDesk Telegram community](https://t.me/magicdesk_android).
    Open the bot in a **private chat**, not a group topic, and send `/start`.
 2. Read its privacy notice. Use `/consent` to accept private storage, then
    `/new` to open a case. Keep one active case at a time.
@@ -40,7 +40,7 @@ You can inspect what changed without access to the private support lab.
 After testing, describe what improved and what still fails, attach a fresh
 report when relevant, and send `/submit`. The same case can continue through
 further questions and builds. A clarification-only response does not produce
-an APK. Confirmed fixes can be reviewed for inclusion in official MagicDesk;
+an APK. Confirmed fixes can be reviewed for inclusion in official MaterialDesk;
 the bot does not automatically merge them.
 
 ## Test APKs
@@ -51,7 +51,7 @@ signing key, so it does not replace the regular app as an Android update.
 GitHub builds and signs it; installation is your choice, never automatic.
 
 Separate packages do not isolate privileged changes to Android. Close regular
-MagicDesk before trying a test build, and do not run both Desktop sessions
+MaterialDesk before trying a test build, and do not run both Desktop sessions
 together. Coexistence has not been fully validated. Public source and a valid
 signature let you inspect provenance; they do not guarantee safety or that a
 patch fixes your problem. Grant powerful permissions only if you accept that risk.

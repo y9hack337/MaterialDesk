@@ -34,6 +34,42 @@ final class FrameworkActivityLaunchApi {
         ActivityOptions.class.getMethod("setAvoidMoveToFront").invoke(options);
     }
 
+    private static final int ANIM_CUSTOM = 1;
+
+    /**
+     * Opens a new task with MagicDesk's fade-and-settle animation instead of
+     * the default task animation, which clips a small, scaling window with
+     * the phone's large screen-corner radius and looks like an oval on a
+     * desktop display. Unsupported releases keep their default animation.
+     */
+    static void useDesktopOpenAnimation(final ActivityOptions options) {
+        try {
+            // Resolve every member first, so a release without one of them
+            // never receives a half-configured custom animation.
+            final java.lang.reflect.Field type = field("mAnimationType");
+            final java.lang.reflect.Field packageName = field("mPackageName");
+            final java.lang.reflect.Field enter = field("mCustomEnterResId");
+            final java.lang.reflect.Field exit = field("mCustomExitResId");
+            // Task launches honor a custom animation only with this override.
+            final java.lang.reflect.Field override = field("mOverrideTaskTransition");
+            packageName.set(options, BuildConfig.APPLICATION_ID);
+            enter.setInt(options, R.anim.desktop_window_open_enter);
+            exit.setInt(options, R.anim.desktop_window_open_exit);
+            override.setBoolean(options, true);
+            type.setInt(options, ANIM_CUSTOM);
+        } catch (ReflectiveOperationException | RuntimeException unsupported) {
+            android.util.Log.w("MagicDeskLaunch", "custom open animation is unavailable",
+                    unsupported);
+        }
+    }
+
+    private static java.lang.reflect.Field field(final String name)
+            throws NoSuchFieldException {
+        final java.lang.reflect.Field field = ActivityOptions.class.getDeclaredField(name);
+        field.setAccessible(true);
+        return field;
+    }
+
     private static ActivityOptions options(final int displayId, final boolean fullscreen)
             throws ReflectiveOperationException {
         if (displayId < 0) { throw new IllegalArgumentException("invalid display"); }
@@ -55,6 +91,7 @@ final class FrameworkActivityLaunchApi {
         }
         final Intent intent = new Intent(source).addFlags(Intent.FLAG_ACTIVITY_NEW_TASK);
         final ActivityOptions options = options(displayId, fullscreen);
+        useDesktopOpenAnimation(options);
         final int result = startActivity(service, intent, options);
         if (result < 0) { throw new IllegalStateException("startActivity returned " + result); }
     }

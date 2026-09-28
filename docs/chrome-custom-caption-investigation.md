@@ -6,7 +6,7 @@ Follow-up experiment: 2026-08-24
 
 Status: unresolved firmware integration defect. All experimental runtime code
 was removed. This document records the evidence and rejected approaches; it
-does not describe a feature present in the current MagicDesk build.
+does not describe a feature present in the current MaterialDesk build.
 
 ## Goal
 
@@ -50,7 +50,7 @@ secondary desktop display.
 
 This explains why keyboard tab switching works while pointer tab selection
 does not. The failure is in the firmware's multi-display WMShell integration,
-not in Chrome's placement of its tabs and not in MagicDesk window bounds.
+not in Chrome's placement of its tabs and not in MaterialDesk window bounds.
 
 The inspected `SystemUI_MFV.apk` contained the relevant modern implementation
 symbols, including `ENABLE_ACCESSIBLE_CUSTOM_HEADERS`, `caption-touch`,
@@ -61,7 +61,7 @@ therefore not established as a solution.
 
 ## Generic Router Prototype
 
-A temporary generic router was built to determine whether MagicDesk could
+A temporary generic router was built to determine whether MaterialDesk could
 repair the missing handoff without patching SystemUI.
 
 The prototype deliberately had no Chrome package check. It used:
@@ -117,7 +117,7 @@ not sufficient.
 
 Correct tokens did not remove the authority boundary. Android verifies that
 the caller owns the source embedded window. The source caption belongs to
-SystemUI, while MagicDesk and its shell UserService do not. The standard
+SystemUI, while MaterialDesk and its shell UserService do not. The standard
 `WindowManager.transferTouchGesture()` route therefore cannot transfer this
 caption gesture on behalf of SystemUI.
 
@@ -184,7 +184,7 @@ The following changes must not be reintroduced as a fix:
 - continuous window, exclusion-region, or task polling;
 - an extra shell process or a Binder call for every ordinary click;
 - direct coordinate injection that ignores Android hit testing;
-- a replacement MagicDesk caption overlay;
+- a replacement MaterialDesk caption overlay;
 - disabling the complete native caption and losing drag, resize, or menus;
 - relying on root identity to bypass input-window ownership.
 
@@ -211,7 +211,7 @@ each active display, retain regions by display, and configure the caption input
 surface so application-declared custom-header regions receive the original
 stream. An upstream ROM or vendor fix can implement that at the correct owner.
 
-For MagicDesk, a future platform fallback is acceptable only if the firmware
+For MaterialDesk, a future platform fallback is acceptable only if the firmware
 exposes a supported way to activate its existing accessible-custom-header or
 `SPY` path. It must be capability-driven and isolated behind the platform
 boundary, not tied to Chrome or Nubia model names.

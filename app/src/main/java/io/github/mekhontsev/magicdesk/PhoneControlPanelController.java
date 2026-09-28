@@ -1,7 +1,7 @@
 package io.github.mekhontsev.magicdesk;
 
 import static io.github.mekhontsev.magicdesk.DesktopUiFactory.COLOR_BACKGROUND;
-import static io.github.mekhontsev.magicdesk.DesktopUiFactory.COLOR_CYAN;
+import static io.github.mekhontsev.magicdesk.DesktopUiFactory.COLOR_ACCENT;
 import static io.github.mekhontsev.magicdesk.DesktopUiFactory.COLOR_MUTED;
 import static io.github.mekhontsev.magicdesk.DesktopUiFactory.COLOR_RED;
 import static io.github.mekhontsev.magicdesk.DesktopUiFactory.COLOR_TEXT;
@@ -255,7 +255,7 @@ final class PhoneControlPanelController {
     private Button integrationButton(final int title) {
         final Button button = mUi.menuItem(title, COLOR_TEXT);
         button.setTextSize(14);
-        button.setTextColor(COLOR_CYAN);
+        button.setTextColor(COLOR_ACCENT);
         button.setPaintFlags(button.getPaintFlags() | Paint.UNDERLINE_TEXT_FLAG);
         button.setSingleLine(false);
         button.setMaxLines(3);

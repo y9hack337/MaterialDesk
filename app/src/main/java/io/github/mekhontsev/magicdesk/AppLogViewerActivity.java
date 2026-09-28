@@ -36,11 +36,11 @@ public final class AppLogViewerActivity extends Activity
     private static final String EXTRA_LABEL =
             "io.github.mekhontsev.magicdesk.extra.LOG_LABEL";
     private static final int MAX_TRANSCRIPT_CHARS = 500_000;
-    private static final int COLOR_BACKGROUND = 0xFF090D14;
-    private static final int COLOR_PANEL = 0xFF172033;
-    private static final int COLOR_TEXT = 0xFFE5E7EB;
-    private static final int COLOR_MUTED = 0xFF94A3B8;
-    private static final int COLOR_CYAN = 0xFF22D3EE;
+    private static final int COLOR_BACKGROUND = DesktopUiFactory.COLOR_BACKGROUND;
+    private static final int COLOR_PANEL = DesktopUiFactory.COLOR_PANEL_ALT;
+    private static final int COLOR_TEXT = DesktopUiFactory.COLOR_TEXT;
+    private static final int COLOR_MUTED = DesktopUiFactory.COLOR_MUTED;
+    private static final int COLOR_ACCENT = DesktopUiFactory.COLOR_ACCENT;
 
     private final ExecutorService mWorker =
             Executors.newSingleThreadExecutor(runnable -> {
@@ -170,7 +170,7 @@ public final class AppLogViewerActivity extends Activity
         page.addView(header);
 
         mStatus = new TextView(this);
-        mStatus.setTextColor(COLOR_CYAN);
+        mStatus.setTextColor(COLOR_ACCENT);
         mStatus.setTextSize(12f);
         mStatus.setTypeface(Typeface.MONOSPACE);
         page.addView(mStatus, new LinearLayout.LayoutParams(

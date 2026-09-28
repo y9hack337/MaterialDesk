@@ -1,6 +1,6 @@
 # Getting Started
 
-MagicDesk has independent tools and automation on Android 14+, with managed
+MaterialDesk has independent tools and automation on Android 14+, with managed
 Desktop on Android 15+. These instructions describe the current development
 build. See [Compatibility](compatibility.md) for tested devices and
 [runtime API levels](runtime-api-levels.md) for unverified boundaries, including
@@ -9,8 +9,8 @@ Android 14 native execution.
 ## Install
 
 Install the [stable APK](https://github.com/mekhontsev/magicdesk/releases/latest)
-or the [development APK](https://github.com/mekhontsev/magicdesk/releases/download/development/MagicDesk-development.apk),
-then open MagicDesk. Phone Control Panel is the starting point for tools,
+or the [development APK](https://github.com/mekhontsev/magicdesk/releases/download/development/MaterialDesk-development.apk),
+then open MaterialDesk. Phone Control Panel is the starting point for tools,
 display selection and Desktop.
 
 For shell-backed operations:
@@ -18,17 +18,17 @@ For shell-backed operations:
 1. Install official [Shizuku](https://github.com/RikkaApps/Shizuku/releases).
 2. Start its server using a method from the
    [Shizuku setup guide](https://shizuku.rikka.app/guide/setup/).
-3. Authorize MagicDesk when it requests Shizuku access.
+3. Authorize MaterialDesk when it requests Shizuku access.
 
 Alternatively, on a rooted phone, choose **Settings > Integrations > Privileged
-service > Root (su)** and restart MagicDesk. Approve its request in the root
+service > Root (su)** and restart MaterialDesk. Approve its request in the root
 manager. **Settings > Limits > Maximum access** defaults to **Shell** (UID 2000)
 for either direct root or root-backed Shizuku. Choose **Root** to permit UID 0,
 or **App only** to disable privileged startup. These changes apply after full
 Exit and reopen; Termux and Desktop have independent Limits switches. No root is required for the
 normal Shizuku path. See [Privilege boundaries](privilege-modes.md).
 
-MagicDesk does not start Shizuku itself or require root. After a reboot,
+MaterialDesk does not start Shizuku itself or require root. After a reboot,
 Shizuku may need restarting, depending on its startup method. Missing shell
 access does not prevent ordinary UI or independently authorized Termux
 sessions from opening.
@@ -44,7 +44,7 @@ require an already started session, and an app restart
 does not undo completed device setup. A missing privileged service or Desktop
 setup does not invalidate a ready Termux integration.
 **Limited** means the framework does not advertise its Desktop provider;
-MagicDesk can still use supported freeform operations, but system captions and
+MaterialDesk can still use supported freeform operations, but system captions and
 window controls may be incomplete. The dialog and Diagnostics explain that
 capability separately from missing setup.
 
@@ -53,23 +53,23 @@ capability separately from missing setup.
 Open **Apps** in the control panel, then choose an application or **Terminal
 sessions**. The selector beside Start search defaults to **Current**, the screen
 containing Start. Select another display there to launch on it.
-Without shell/root access, Apps can select displays exposed to MagicDesk by
+Without shell/root access, Apps can select displays exposed to MaterialDesk by
 Android and retains saved **Recent** entries. Android decides whether each app
 may launch on the destination. Global running-task queries and transfers of
 existing tasks require the privileged service.
 
 Outside Desktop these are ordinary fullscreen Activities. If the destination
-already has a MagicDesk Desktop session, the tools use its managed window path.
+already has a MaterialDesk Desktop session, the tools use its managed window path.
 Neither action starts a session implicitly or requires Desktop provisioning.
 
 Files and Android-shell Console need the authorized privileged service. Termux Console needs
-Termux, external app commands enabled in its configuration, and MagicDesk's
+Termux, external app commands enabled in its configuration, and MaterialDesk's
 Termux `RUN_COMMAND` permission. Termux and Android-shell sessions use different
 UIDs and filesystem access.
 
 Closing an ordinary terminal window detaches it. **Terminal sessions** can reopen
 the same retained session; **End session** terminates it. Retention lasts only
-while the MagicDesk process and transport survive. Optional tmux sessions
+while the MaterialDesk process and transport survive. Optional tmux sessions
 inside Termux provide a separate lifetime for longer-running programs. Closing
 a managed tmux window releases only its client PTY; opening the session again
 attaches a new client without restarting its programs.
@@ -79,11 +79,11 @@ See [Workstation tools](workstation-tools.md).
 ## Open Linux Applications
 
 Enable external commands in Termux's `~/.termux/termux.properties` with
-`allow-external-apps=true`, reload its settings, and grant MagicDesk the requested
+`allow-external-apps=true`, reload its settings, and grant MaterialDesk the requested
 Termux `RUN_COMMAND` permission. Tap **Termux** in Phone Control Panel for
 **Grant permission**, **Copy setup command**, **Open Termux** and **Check connection**.
 Paste and run the copied command in Termux; it preserves other settings and can
-be run again. MagicDesk checks the connection once when its UI opens with these
+be run again. MaterialDesk checks the connection once when its UI opens with these
 prerequisites available. **Ready** confirms command execution and a returned result;
 **Available** means execution has not been verified (including a reply timeout).
 The check can start Termux's background service, but does not open its window or
@@ -96,7 +96,7 @@ pkg install x11-repo
 pkg install xkeyboard-config gimp
 ```
 
-Open Start and search for GIMP. MagicDesk discovers installed Termux `.desktop`
+Open Start and search for GIMP. MaterialDesk discovers installed Termux `.desktop`
 launchers when Start opens. The X server is embedded; no separate Termux:X11 APK
 is required. Choose the display and window mode with Start's normal controls.
 Interactive Linux graphics launches and reopening an existing window on its
@@ -118,7 +118,7 @@ In **New command app**, choose
 **Linux (Termux)** for an installed proot-distro environment or a custom entry
 script. Choose **Linux (Shell / root)** for a prepared chroot without Termux.
 Chroot entry requires actual root access; graphical Shell launchers also need
-an Android-visible XKB data directory. MagicDesk supplies the terminal, X11 server
+an Android-visible XKB data directory. MaterialDesk supplies the terminal, X11 server
 and Wayland compositor, while your Linux environment supplies its programs.
 See [Embedded X11](x11.md), [Embedded Wayland](wayland.md) and
 [Desktop Entry files](desktop-entries.md) for launch and file-exchange requirements.
@@ -127,7 +127,7 @@ See [Embedded X11](x11.md), [Embedded Wayland](wayland.md) and
 
 The control panel lists displays exposed by Android, using the privileged
 inventory when available. Select the phone, a wired/wireless display, or a
-MagicDesk-owned virtual display, then use the actions below the list.
+MaterialDesk-owned virtual display, then use the actions below the list.
 Resource creation, input control, Viewer and global task actions require
 privileged access; ordinary interactive application launches do not.
 Selecting a row does not
@@ -158,7 +158,7 @@ explicit choice, not an inherited setting.
 Creation requires the privileged service but does not acquire
 HOME or start Desktop. To view an existing display from a computer, use its ID
 with the [scrcpy example](../README.md#magicdesk-on-a-computer-with-scrcpy).
-MagicDesk does not bundle or start the computer-side viewer.
+MaterialDesk does not bundle or start the computer-side viewer.
 
 **Display Viewer** in Start opens another display inside a normal application
 window. Select the destination and window mode using the same Start controls as
@@ -172,24 +172,24 @@ It is not required before unplugging the output or switching sources.
 
 **Start desktop** on an untrusted public external display automatically uses a
 portable workspace. **Start portable desktop here** does the same on other
-outputs. An existing output Viewer is kept; otherwise MagicDesk reuses an available
+outputs. An existing output Viewer is kept; otherwise MaterialDesk reuses an available
 virtual display with matching resolution and the fewest managed applications,
 or creates one. Its existing scale and applications are preserved. The table
 shows Desktop on the virtual source and the Viewer connection on the output.
 
 **Connect wireless display** opens the available Android Cast settings or
-platform connection UI. Complete the connection there and return to MagicDesk.
-A mirroring image is not itself an active MagicDesk session: Android must first
+platform connection UI. Complete the connection there and return to MaterialDesk.
+A mirroring image is not itself an active MaterialDesk session: Android must first
 publish a usable secondary display, which can then be selected.
 
 The resource lifetimes are separate:
 
 - **Close desktop** keeps the selected display.
-- **Remove display** is available only for MagicDesk-owned displays. It closes
+- **Remove display** is available only for MaterialDesk-owned displays. It closes
   a session on that display first and removes it after cleanup.
 - Wired and wireless connections remain under system control.
-- Stopping a viewer does not remove a MagicDesk-created display. Process loss
-  releases MagicDesk's owned display resources.
+- Stopping a viewer does not remove a MaterialDesk-created display. Process loss
+  releases MaterialDesk's owned display resources.
 
 Additional built-in screens on dual-screen devices are not yet verified
 Desktop targets. A virtual display does not emulate another Android version.
@@ -202,15 +202,15 @@ Only managed Desktop needs this preparation:
 2. Complete the required freeform/resizable setup and any applicable platform
    checks.
 3. Reboot only if setup requests it; cached framework configuration may require
-   that step. MagicDesk never reboots automatically.
-4. Restart Shizuku as needed and reopen MagicDesk.
+   that step. MaterialDesk never reboots automatically.
+4. Restart Shizuku as needed and reopen MaterialDesk.
 5. Select a display and press **Start desktop**.
 
 Each display can run its own Desktop. Select another display and start there
 without closing an existing workspace. **Show desktop** returns to the selected workspace, keeping its managed
 freeform tasks and demoting managed fullscreen tasks on that display.
 
-MagicDesk temporarily acquires Android's HOME role for the first Desktop and
+MaterialDesk temporarily acquires Android's HOME role for the first Desktop and
 retains it until the last one closes. Without a phone Desktop, phone Start
 defaults to independent fullscreen launches. With a phone Desktop, HOME reveals
 its taskbar without replacing the foreground application. Each Start's Recent
@@ -243,7 +243,7 @@ any Desktop is running. The previous theme returns after the last session closes
 unless it was changed in Android settings meanwhile. This is a session override,
 not a separate theme for each display.
 
-Notification-listener access is optional. Grant it only when MagicDesk's
+Notification-listener access is optional. Grant it only when MaterialDesk's
 notification center and popups are wanted.
 
 ## Close, Exit And Recovery
@@ -256,17 +256,17 @@ only tasks that are still alive. It keeps independent tools, retained terminals
 and owned displays available. Other Desktops keep running; only closing the last
 one returns HOME to its previous role state.
 
-**Exit MagicDesk** also clears that live workspace record, closes built-in
+**Exit MaterialDesk** also clears that live workspace record, closes built-in
 windows, ends retained terminal and graphical sessions, removes owned displays and
 stops the app process after cleanup. Neither action deletes Desktop files.
 Reopening applies pending integration-package and privilege settings; Close
 Desktop does not restart the app or apply those startup choices.
 
 Unexpected display loss runs the same session cleanup. After process loss,
-startup recovery relinquishes stale MagicDesk HOME ownership before waiting
-for the privileged service. MagicDesk is not offered as an inactive HOME choice.
+startup recovery relinquishes stale MaterialDesk HOME ownership before waiting
+for the privileged service. MaterialDesk is not offered as an inactive HOME choice.
 When there was no explicit HOME holder at session start, Android may show its
-launcher chooser again; MagicDesk does not choose a replacement on the user's behalf.
+launcher chooser again; MaterialDesk does not choose a replacement on the user's behalf.
 
 The persistent notification opens Phone Control Panel. Its separate touchpad
 action opens the phone input surface when external input control is available.
@@ -276,12 +276,12 @@ focused terminal even without Desktop, rather than creating another shell.
 ## Scale And Output
 
 **Quick controls**, opened by the taskbar sliders icon, exposes display density,
-audio, pointer speed and available hardware controls. Its gear opens **MagicDesk
+audio, pointer speed and available hardware controls. Its gear opens **MaterialDesk
 settings**; **Android sound settings** opens the separate Android page.
 Physical output resolution/refresh is selected with the target screen in Phone
 Control Panel, before starting Desktop, and depends on Android and available
 platform/SoC capabilities.
-**System/native** relinquishes MagicDesk's forced output selection.
+**System/native** relinquishes MaterialDesk's forced output selection.
 
 Application-specific interface scale is independent of display density.
 Open the app's context menu in Desktop, choose **Application settings**, then
@@ -297,7 +297,7 @@ Desktop files are shared across displays; item positions and window bounds
 adapt to each work area.
 
 The optional **Settings > Android system** desktop-mode switch changes Android's
-own external-display policy. It is not a MagicDesk session requirement and may
+own external-display policy. It is not a MaterialDesk session requirement and may
 add system decorations. Follow its reconnect/restart guidance; Close does not
 toggle it.
 
@@ -333,7 +333,7 @@ follow its reboot guidance before uninstalling.
 Restore defaults removes desktop-windowing overrides and resets primary-display
 size, density and scaling overrides. It restores system defaults, not an
 arbitrary earlier installation's values. Android cannot run that cleanup after
-removing the package; reinstall and authorize MagicDesk if it is needed.
+removing the package; reinstall and authorize MaterialDesk if it is needed.
 Tools-only use does not require Desktop provisioning or its reset procedure.
 
 ## Problems

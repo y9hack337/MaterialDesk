@@ -545,6 +545,25 @@ public final class ShellAccess {
         }
     }
 
+    static boolean injectTouchpadPinch(
+            final int displayId,
+            final int phase,
+            final float scale) {
+        if (!isReady() || displayId < 0) {
+            return false;
+        }
+        final IShellCommandService service = connectedServiceOrConnect();
+        if (service == null) {
+            return false;
+        }
+        try {
+            return service.injectTouchpadPinch(displayId, phase, scale);
+        } catch (RemoteException | RuntimeException error) {
+            handleServiceFailure(error);
+            return false;
+        }
+    }
+
     static PointerPosition observeMousePosition() {
         if (!isReady()) {
             return null;

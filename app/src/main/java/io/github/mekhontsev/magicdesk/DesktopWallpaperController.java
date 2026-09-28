@@ -4,8 +4,10 @@ import android.content.Context;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
+import android.graphics.LinearGradient;
 import android.graphics.Paint;
 import android.graphics.RectF;
+import android.graphics.Shader;
 import android.graphics.drawable.Drawable;
 import android.os.Handler;
 import android.os.Looper;
@@ -401,7 +403,16 @@ final class DesktopWallpaperController {
             final int targetWidth, final int targetHeight) {
         final Bitmap wallpaper = Bitmap.createBitmap(
                 targetWidth, targetHeight, Bitmap.Config.ARGB_8888);
-        wallpaper.eraseColor(0xFF090D14);
+        // A Material tonal gradient from the dynamic palette stands in for the
+        // system wallpaper, so shell surfaces keep their contrast against it.
+        final Paint paint = new Paint();
+        paint.setShader(new LinearGradient(
+                0.0f, 0.0f, 0.0f, targetHeight,
+                DesktopUiFactory.COLOR_ACCENT_CONTAINER,
+                DesktopUiFactory.COLOR_BACKGROUND,
+                Shader.TileMode.CLAMP));
+        new Canvas(wallpaper).drawRect(
+                0.0f, 0.0f, targetWidth, targetHeight, paint);
         return wallpaper;
     }
 

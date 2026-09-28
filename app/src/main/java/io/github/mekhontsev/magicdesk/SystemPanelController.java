@@ -17,6 +17,9 @@ final class SystemPanelController {
     private final DesktopUiFactory mUi;
 
     private LinearLayout mPanel;
+    /** Last loaded Android tiles; shown at once, then refreshed off-thread. */
+    private java.util.List<AndroidQuickTiles.Tile> mQuickTiles = java.util.List.of();
+    private boolean mQuickTilesLoaded;
 
     SystemPanelController(
             final DesktopShellActivity activity,
@@ -53,12 +56,13 @@ final class SystemPanelController {
         if (panels == null || mPanel == null) {
             return;
         }
-        if (panels.isRequested(mPanel)) {
+        if (panels.isShowing(mPanel)) {
             mActivity.hideAllPanels();
             return;
         }
         mActivity.captureInteractionStackForPanel();
         render();
+        refreshQuickTiles();
 
         final Rect area = mActivity.getDesktopPanelAreaBounds();
         final int areaWidth = area.width();
@@ -123,6 +127,7 @@ final class SystemPanelController {
         final LinearLayout content = new LinearLayout(mActivity);
         content.setOrientation(LinearLayout.VERTICAL);
         content.setPadding(0, dp(4), 0, 0);
+        addQuickTiles(content);
         mActivity.populateSystemControls(content, dp(10));
 
         final ScrollView scroll = new ScrollView(mActivity);
@@ -132,6 +137,140 @@ final class SystemPanelController {
                 ScrollView.LayoutParams.WRAP_CONTENT));
         mPanel.addView(scroll, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+    }
+
+    /** Android's own Quick Settings application tiles, such as a VPN. */
+    private void addQuickTiles(final LinearLayout content) {
+        mUi.addControlSection(content, R.string.quick_tiles_title, dp(10));
+        if (!ShellAccess.isReady()) {
+            content.addView(note(R.string.quick_tiles_unavailable));
+            return;
+        }
+        if (mQuickTilesLoaded && mQuickTiles.isEmpty()) {
+            content.addView(note(R.string.quick_tiles_empty));
+        }
+        final android.widget.GridLayout grid = new android.widget.GridLayout(mActivity);
+        grid.setColumnCount(2);
+        grid.setUseDefaultMargins(false);
+        for (final AndroidQuickTiles.Tile tile : mQuickTiles) {
+            final android.widget.GridLayout.LayoutParams params =
+                    new android.widget.GridLayout.LayoutParams();
+            params.width = 0;
+            params.height = dp(52);
+            params.columnSpec = android.widget.GridLayout.spec(
+                    android.widget.GridLayout.UNDEFINED, 1f);
+            params.setMargins(dp(3), dp(3), dp(3), dp(3));
+            grid.addView(tileView(tile), params);
+        }
+        content.addView(grid, new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT,
+                LinearLayout.LayoutParams.WRAP_CONTENT));
+        final android.widget.Button phone = mUi.actionButton(
+                R.string.quick_tiles_open_phone, DesktopUiFactory.COLOR_PANEL_ALT);
+        phone.setOnClickListener(view -> DesktopOperations.executeSerialized(() -> {
+            try {
+                AndroidQuickTiles.expandOnPhone();
+            } catch (java.io.IOException error) {
+                showTileError(error);
+            }
+        }));
+        final LinearLayout.LayoutParams phoneParams = new LinearLayout.LayoutParams(
+                LinearLayout.LayoutParams.MATCH_PARENT, dp(44));
+        phoneParams.setMargins(dp(3), dp(6), dp(3), 0);
+        content.addView(phone, phoneParams);
+        mActivity.registerAutomationUiElement(phone, "quick_controls.android_quick_settings",
+                "button", mActivity.getString(R.string.quick_tiles_open_phone));
+    }
+
+    private View tileView(final AndroidQuickTiles.Tile tile) {
+        final LinearLayout view = new LinearLayout(mActivity);
+        view.setGravity(Gravity.CENTER_VERTICAL);
+        view.setPadding(dp(14), 0, dp(12), 0);
+        view.setClickable(true);
+        view.setFocusable(true);
+        view.setBackground(mUi.interactiveRounded(DesktopUiFactory.COLOR_PANEL_FOCUS,
+                dp(DesktopUiFactory.SHAPE_FULL_DP), DesktopUiFactory.COLOR_ACCENT));
+        final android.widget.ImageView icon = new android.widget.ImageView(mActivity);
+        icon.setImageDrawable(tile.icon());
+        if (tile.tintIcon()) {
+            icon.setColorFilter(COLOR_TEXT);
+        }
+        view.addView(icon, new LinearLayout.LayoutParams(dp(22), dp(22)));
+        final TextView label = new TextView(mActivity);
+        label.setText(tile.label());
+        label.setTextColor(COLOR_TEXT);
+        label.setTextSize(13);
+        label.setSingleLine(true);
+        label.setEllipsize(android.text.TextUtils.TruncateAt.END);
+        label.setPadding(dp(10), 0, 0, 0);
+        view.addView(label, new LinearLayout.LayoutParams(
+                0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
+        view.setContentDescription(tile.label());
+        view.setTooltipText(tile.label());
+        view.setOnClickListener(clicked -> DesktopOperations.executeSerialized(() -> {
+            try {
+                AndroidQuickTiles.click(tile.component());
+                mActivity.runOnUiThread(() -> {
+                    if (!mActivity.isActivityUnavailable()) {
+                        mActivity.setStatus(mActivity.getString(
+                                R.string.quick_tiles_pressed, tile.label()));
+                    }
+                });
+            } catch (java.io.IOException error) {
+                showTileError(error);
+            }
+        }));
+        mActivity.registerAutomationUiElement(view,
+                "quick_controls.tile." + DesktopAutomationUiRegistry.identitySegment(tile.component()),
+                "button", tile.label());
+        return view;
+    }
+
+    private TextView note(final int text) {
+        final TextView note = new TextView(mActivity);
+        note.setText(text);
+        note.setTextColor(DesktopUiFactory.COLOR_MUTED);
+        note.setTextSize(12);
+        note.setPadding(dp(4), 0, dp(4), dp(6));
+        return note;
+    }
+
+    /** Loads tiles off the UI thread; re-renders only when the set changed. */
+    private void refreshQuickTiles() {
+        if (!ShellAccess.isReady()) {
+            return;
+        }
+        DesktopOperations.executeSerialized(() -> {
+            final java.util.List<AndroidQuickTiles.Tile> tiles;
+            try {
+                tiles = AndroidQuickTiles.load(mActivity);
+            } catch (java.io.IOException error) {
+                return;
+            }
+            mActivity.runOnUiThread(() -> {
+                final boolean changed = !mQuickTilesLoaded
+                        || !AndroidQuickTiles.sameComponents(mQuickTiles, tiles);
+                mQuickTiles = tiles;
+                mQuickTilesLoaded = true;
+                final DesktopPanelWindowController panels = mActivity.panels();
+                if (changed && !mActivity.isActivityUnavailable() && panels != null
+                        && mPanel != null && panels.isShowing(mPanel)) {
+                    // Reopen at the new measured height.
+                    mActivity.hideAllPanels();
+                    toggle();
+                }
+            });
+        });
+    }
+
+    private void showTileError(final java.io.IOException error) {
+        mActivity.runOnUiThread(() -> {
+            if (!mActivity.isActivityUnavailable()) {
+                mActivity.setErrorStatus("QUICK-TILE-001",
+                        mActivity.getString(R.string.quick_tiles_failed,
+                                ShellAccess.usefulMessage(error)));
+            }
+        });
     }
 
     private int dp(final int value) {

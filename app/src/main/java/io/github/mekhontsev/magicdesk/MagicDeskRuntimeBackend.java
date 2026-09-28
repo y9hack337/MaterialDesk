@@ -59,7 +59,9 @@ interface MagicDeskRuntimeBackend {
 
     boolean clickPointer(int displayId, int button);
 
-    boolean scrollPointer(int displayId, float amount);
+    boolean scrollPointer(int displayId, float vertical, float horizontal);
+
+    boolean pinchPointer(int displayId, int phase, float scale);
 
 
     boolean showStart(final int displayId);
@@ -77,6 +79,10 @@ interface MagicDeskRuntimeBackend {
     boolean cancelAltTab(final int displayId);
 
     boolean toggleShortcutHelp(final int displayId);
+
+    boolean toggleTaskOverview(int displayId);
+
+    boolean openBuiltin(int displayId, String builtin);
 
     boolean toggleNotificationCenter(final int displayId);
 

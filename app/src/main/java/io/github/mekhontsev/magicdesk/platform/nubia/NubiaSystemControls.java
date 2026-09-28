@@ -67,6 +67,7 @@ final class NubiaSystemControls implements PlatformSystemControls {
         updateBatteryStatus(mLastBatteryIntent);
 
         mChargeSeparationSwitch = new Switch(mActivity);
+        mUi.styleSwitch(mChargeSeparationSwitch);
         mChargeSeparationSwitch.setText(R.string.charge_separation_label);
         mChargeSeparationSwitch.setTextColor(DesktopUiFactory.COLOR_TEXT);
         mChargeSeparationSwitch.setTextSize(14);

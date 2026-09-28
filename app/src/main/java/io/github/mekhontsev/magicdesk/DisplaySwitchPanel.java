@@ -122,9 +122,9 @@ final class DisplaySwitchPanel implements AutoCloseable {
     void select(int index) {
         for (int i = 0; i < rows.size(); i++) {
             if (panels == null) rows.get(i).setBackgroundColor(
-                    i == index ? DesktopUiFactory.COLOR_CYAN : android.graphics.Color.TRANSPARENT);
+                    i == index ? DesktopUiFactory.COLOR_ACCENT : android.graphics.Color.TRANSPARENT);
             else rows.get(i).setBackground(ui.interactiveRounded(i == index
-                    ? DesktopUiFactory.COLOR_CYAN : DesktopUiFactory.COLOR_PANEL, ui.dp(4), DesktopUiFactory.COLOR_CYAN));
+                    ? DesktopUiFactory.COLOR_ACCENT : DesktopUiFactory.COLOR_PANEL, ui.dp(4), DesktopUiFactory.COLOR_ACCENT));
             rows.get(i).setSelected(i == index);
             rows.get(i).setTextColor(i == index ? DesktopUiFactory.COLOR_BACKGROUND : DesktopUiFactory.COLOR_TEXT);
         }

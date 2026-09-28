@@ -94,6 +94,24 @@ final class DesktopShortcutActions {
             case SHORTCUT_HELP:
                 DesktopOperations.showShortcutHelp();
                 break;
+            case TASK_VIEW:
+                DesktopOperations.toggleTaskOverview();
+                break;
+            case FILES:
+                DesktopOperations.openBuiltin("files");
+                break;
+            case SEARCH:
+                DesktopOperations.showStart();
+                break;
+            case RUN:
+                DesktopOperations.openBuiltin("console");
+                break;
+            case TASK_MANAGER:
+                DesktopOperations.openBuiltin("task_manager");
+                break;
+            case REGION_SCREENSHOT:
+                DesktopOperations.openBuiltin("region_screenshot");
+                break;
             case NONE:
             default:
                 break;

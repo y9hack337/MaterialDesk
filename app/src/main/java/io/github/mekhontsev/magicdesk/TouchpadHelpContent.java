@@ -1,7 +1,6 @@
 package io.github.mekhontsev.magicdesk;
 
 import android.content.Context;
-import android.graphics.Typeface;
 import android.view.Gravity;
 import android.widget.LinearLayout;
 import android.widget.ScrollView;
@@ -21,12 +20,12 @@ final class TouchpadHelpContent {
         scroll.setClickable(true);
         scroll.setBackground(ui.rounded(
                 DesktopUiFactory.COLOR_PANEL,
-                ui.dp(8),
-                DesktopUiFactory.COLOR_PANEL_ALT));
+                ui.dp(DesktopUiFactory.SHAPE_EXTRA_LARGE_DP),
+                DesktopUiFactory.COLOR_PANEL));
 
         final LinearLayout content = new LinearLayout(context);
         content.setOrientation(LinearLayout.VERTICAL);
-        content.setPadding(ui.dp(18), ui.dp(16), ui.dp(18), ui.dp(18));
+        content.setPadding(ui.dp(24), ui.dp(20), ui.dp(24), ui.dp(20));
         scroll.addView(content, new ScrollView.LayoutParams(
                 ScrollView.LayoutParams.MATCH_PARENT,
                 ScrollView.LayoutParams.WRAP_CONTENT));
@@ -40,12 +39,30 @@ final class TouchpadHelpContent {
                 R.string.touchpad_gesture_click_action);
         addRow(context, ui, content, R.string.touchpad_gesture_right_click,
                 R.string.touchpad_gesture_right_click_action);
+        addRow(context, ui, content, R.string.touchpad_gesture_middle_click,
+                R.string.touchpad_gesture_middle_click_action);
         addRow(context, ui, content, R.string.touchpad_gesture_drag,
                 R.string.touchpad_gesture_drag_action);
         addRow(context, ui, content, R.string.touchpad_gesture_scroll,
                 R.string.touchpad_gesture_scroll_action);
-        addRow(context, ui, content, R.string.touchpad_gesture_keyboard,
-                R.string.touchpad_gesture_keyboard_action);
+        addRow(context, ui, content, R.string.touchpad_gesture_zoom,
+                R.string.touchpad_gesture_zoom_action);
+        addRow(context, ui, content, R.string.touchpad_gesture_navigate,
+                R.string.touchpad_gesture_navigate_action);
+        addRow(context, ui, content, R.string.touchpad_gesture_task_view,
+                R.string.touchpad_gesture_task_view_action);
+        addRow(context, ui, content, R.string.touchpad_gesture_show_desktop,
+                R.string.touchpad_gesture_show_desktop_action);
+        addRow(context, ui, content, R.string.touchpad_gesture_switch_apps,
+                R.string.touchpad_gesture_switch_apps_action);
+        addRow(context, ui, content, R.string.touchpad_gesture_start,
+                R.string.touchpad_gesture_start_action);
+        addRow(context, ui, content, R.string.touchpad_gesture_notifications,
+                R.string.touchpad_gesture_notifications_action);
+        addRow(context, ui, content, R.string.touchpad_gesture_close,
+                R.string.touchpad_gesture_close_action);
+        addRow(context, ui, content, R.string.touchpad_gesture_screen,
+                R.string.touchpad_gesture_screen_action);
 
         addSectionTitle(
                 context, ui, content,
@@ -65,9 +82,10 @@ final class TouchpadHelpContent {
             final int topMargin) {
         final TextView title = new TextView(context);
         title.setText(titleResId);
-        title.setTextColor(DesktopUiFactory.COLOR_TEXT);
-        title.setTextSize(18);
-        title.setTypeface(Typeface.DEFAULT_BOLD);
+        title.setTextColor(DesktopUiFactory.COLOR_ACCENT);
+        title.setTextSize(14);
+        title.setTypeface(DesktopUiFactory.medium());
+        title.setAccessibilityHeading(true);
         final LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT);
@@ -89,16 +107,16 @@ final class TouchpadHelpContent {
 
         final TextView keys = new TextView(context);
         keys.setText(keysResId);
-        keys.setTextColor(DesktopUiFactory.COLOR_CYAN);
+        keys.setTextColor(DesktopUiFactory.COLOR_TEXT);
         keys.setTextSize(14);
-        keys.setTypeface(Typeface.MONOSPACE, Typeface.BOLD);
+        keys.setTypeface(DesktopUiFactory.medium());
         row.addView(keys, new LinearLayout.LayoutParams(
                 ui.dp(KEYS_WIDTH_DP),
                 LinearLayout.LayoutParams.WRAP_CONTENT));
 
         final TextView action = new TextView(context);
         action.setText(actionResId);
-        action.setTextColor(DesktopUiFactory.COLOR_TEXT);
+        action.setTextColor(DesktopUiFactory.COLOR_MUTED);
         action.setTextSize(14);
         row.addView(action, new LinearLayout.LayoutParams(
                 0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));

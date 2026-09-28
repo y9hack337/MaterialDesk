@@ -415,12 +415,7 @@ final class RedmagicHardwarePanelController
         }
         button.setEnabled(enabled);
         button.setAlpha(selected ? 1f : 0.72f);
-        button.setBackground(mUi.rounded(
-                DesktopUiFactory.COLOR_PANEL_ALT,
-                dp(8),
-                selected
-                        ? DesktopUiFactory.COLOR_CYAN
-                        : DesktopUiFactory.COLOR_PANEL_ALT));
+        button.setBackground(mUi.segmentBackground(selected));
     }
 
     private void setFanControlsEnabled(final boolean enabled) {

@@ -387,11 +387,19 @@ public final class MagicDeskRuntime {
                 && backend.clickPointer(displayId, button);
     }
 
+    /** One {@link TouchpadPinchInjector} phase of a touchpad pinch. */
+    static boolean pinchPointer(final int displayId, final int phase, final float scale) {
+        final MagicDeskRuntimeBackend backend = backend();
+        return backend != null && backend.pinchPointer(displayId, phase, scale);
+    }
+
     static boolean scrollPointer(
-            final int displayId, final float amount) {
+            final int displayId,
+            final float vertical,
+            final float horizontal) {
         final MagicDeskRuntimeBackend backend = backend();
         return backend != null
-                && backend.scrollPointer(displayId, amount);
+                && backend.scrollPointer(displayId, vertical, horizontal);
     }
 
 
@@ -435,6 +443,16 @@ public final class MagicDeskRuntime {
     static boolean toggleShortcutHelp(final int displayId) {
         final MagicDeskRuntimeBackend backend = backend();
         return backend != null && backend.toggleShortcutHelp(displayId);
+    }
+
+    static boolean openBuiltin(final int displayId, final String builtin) {
+        final MagicDeskRuntimeBackend backend = backend();
+        return backend != null && backend.openBuiltin(displayId, builtin);
+    }
+
+    static boolean toggleTaskOverview(final int displayId) {
+        final MagicDeskRuntimeBackend backend = backend();
+        return backend != null && backend.toggleTaskOverview(displayId);
     }
 
     static boolean toggleNotificationCenter(final int displayId) {

@@ -43,15 +43,15 @@ The desktop supports:
 - native global drag and drop;
 - folder, web, Android application, and command `.desktop` entries;
 - shared file activation and context menus with built-in Files;
-- the bundled MagicDesk wallpaper or a custom image selected in Files.
+- the bundled MaterialDesk wallpaper or a custom image selected in Files.
 
 Use **Set as desktop wallpaper** on an image in Files to replace the background.
-**Use MagicDesk wallpaper** in the desktop context menu restores the bundled
+**Use MaterialDesk wallpaper** in the desktop context menu restores the bundled
 background. These actions do not change the phone's system wallpaper.
 
 ## Files
 
-Built-in Files browses the filesystem visible to MagicDesk's authorized shell
+Built-in Files browses the filesystem visible to MaterialDesk's authorized shell
 identity. It supports:
 
 - path and parent navigation;
@@ -76,7 +76,7 @@ Conflicting copies receive a numeric suffix rather than silently replacing
 existing data.
 
 On Android 14, local-only drags such as directories stay in their source window.
-Android 15+ permits those selections to cross MagicDesk windows using the
+Android 15+ permits those selections to cross MaterialDesk windows using the
 same-application drag flag. Exportable file-URI drags have their own grant path.
 
 Desktop **Paste** and Files **Paste** also accept Android clipboard content.
@@ -86,7 +86,7 @@ file or web link and can share the current text/files through Android's chooser.
 These actions inspect the clipboard only when invoked and do not maintain a
 clipboard listener or history.
 
-Android's share sheet exposes **Save to MagicDesk Desktop**. The receiver asks
+Android's share sheet exposes **Save to MaterialDesk Desktop**. The receiver asks
 for confirmation, then materializes shared provider content or text in the
 Desktop folder while incoming URI permissions remain valid.
 
@@ -101,11 +101,11 @@ with** dialog can write the same system preferred-handler record. Executable
 
 Files shares an individual selection with another Android application through
 a temporary content URI. The receiving application does not inherit
-MagicDesk's shell identity or unrestricted filesystem access.
+MaterialDesk's shell identity or unrestricted filesystem access.
 
 ## Desktop Entry Files
 
-MagicDesk supports a bounded freedesktop-compatible `.desktop` subset for:
+MaterialDesk supports a bounded freedesktop-compatible `.desktop` subset for:
 
 - folders and web links;
 - Android applications and published shortcuts;
@@ -145,7 +145,7 @@ pseudo-terminal. A window is its optional presentation, not its lifetime owner.
 Closing an ordinary window detaches it; **Terminal sessions** can reattach the
 same PTY.
 **End session**, shell exit, transport failure or runtime exit terminates it.
-Sessions survive Close Desktop but not MagicDesk process death or APK replacement.
+Sessions survive Close Desktop but not MaterialDesk process death or APK replacement.
 Managed tmux connections have a different close contract: only the client PTY
 ends, while tmux retains its session and programs.
 The built-in backend runs `/system/bin/sh` with the authorized
@@ -210,14 +210,14 @@ and does not execute the script through this action.
 
 **Settings > Integrations** accepts a compatible Termux application's package
 name, defaulting to `com.termux`. The Shizuku manager package is configurable in
-the same section. Both choices apply only after restarting the MagicDesk
+the same section. Both choices apply only after restarting the MaterialDesk
 process; saving a choice does not switch active connections or terminals.
 There is no built-in list of forks. A Termux fork must retain the standard
 `RUN_COMMAND` protocol and a supported service permission. Changing the package
 name cannot make an incompatible command API compatible.
 
 When Termux is installed and external application commands are enabled,
-MagicDesk can open an independent Termux-backed Console at the current Files
+MaterialDesk can open an independent Termux-backed Console at the current Files
 directory. It uses the same renderer, input, resize, selection, drag-and-drop,
 current-directory tracking, task lifecycle, and MCP `terminal.*` operations as
 the Android-shell Console. Multiple sessions own independent shells; closing a
@@ -225,7 +225,7 @@ window detaches only its presentation.
 
 When the optional `tmux` package is installed inside Termux, **Terminal sessions**
 combines retained terminals and tmux sessions in one list, without duplicating
-a session for its attached MagicDesk client. The same picker appears in the
+a session for its attached MaterialDesk client. The same picker appears in the
 control panel's Apps launcher and console toolbars. Closing or detaching a managed
 tmux window disconnects only its client; reopening attaches to the retained session.
 Explicit termination of a tmux session affects all its windows and clients and
@@ -238,9 +238,9 @@ program, such as `mc` or `nvim`, and uses a sanitized OSC terminal title as
 additional context. The same shell PID, foreground PID/process group,
 executable, title, and derived task label are available to MCP terminal status.
 
-MagicDesk installs its small versioned PTY relay atomically inside Termux's
+MaterialDesk installs its small versioned PTY relay atomically inside Termux's
 private home through the documented `RUN_COMMAND` stdin channel. The relay
-connects back only over an authenticated loopback socket. MagicDesk neither
+connects back only over an authenticated loopback socket. MaterialDesk neither
 copies Termux executables into the APK nor reads the Termux application's PTY
 registry. Session pickers, Task Manager and automation query tmux's own registry
 on demand.
@@ -248,13 +248,13 @@ Directories under Termux's private home cannot be opened in Files when the
 authorized Android shell identity cannot read them.
 
 A `.desktop` entry can run a command through Termux or combine it with an
-Android application launch. The entry owns its command; MagicDesk does not
+Android application launch. The entry owns its command; MaterialDesk does not
 replace it with a package-specific startup or reconnect script. See
 [Desktop Entry files](desktop-entries.md).
 
 ## Linux Applications And Desktops
 
-MagicDesk embeds an X11 server and a Wayland compositor with shared Android
+MaterialDesk embeds an X11 server and a Wayland compositor with shared Android
 hosting, input and rendering. No companion display-server APK is required.
 Installed Termux graphical applications with launchable `.desktop` entries
 appear in Start and default to X11; custom recipes can select either protocol.
@@ -267,7 +267,7 @@ nested compositor using its Wayland backend.
 Focused Linux windows exchange text, HTML, PNG images and files with Android's
 clipboard. Copy drag-and-drop works between compatible Android and Linux windows,
 including separate sessions. Termux-hosted file exchange uses its UID.
-Shell-hosted servers run under MagicDesk's app UID and exchange files only
+Shell-hosted servers run under MaterialDesk's app UID and exchange files only
 through their explicit shared content directory. Prepared chroots can use
 Shell/root launchers without Termux; the existing service must have UID 0.
 Desktop is not a prerequisite. See [Embedded X11](x11.md) and [Embedded Wayland](wayland.md)
@@ -283,7 +283,7 @@ The desktop taskbar and Start menu operate on real Android tasks. Additional
 items remain reachable through an icon-and-name overflow list when the taskbar
 is full.
 
-Start provides application, file, MagicDesk setting, and desktop-action
+Start provides application, file, MaterialDesk setting, and desktop-action
 search. Application context menus expose supported Android shortcuts, launch
 modes, new-window requests, Android application information, pinning, and
 `.desktop` shortcut creation.
@@ -301,7 +301,7 @@ Task Manager provides:
 
 - Android tasks, retained terminals, tmux and X11 sessions in Applications;
 - process trees with name, CPU, RSS memory and PID sorting, plus a Termux filter
-  that also includes processes started outside MagicDesk;
+  that also includes processes started outside MaterialDesk;
 - exact-task focus/close and explicit session termination through their owners;
 - explicit package force-stop and identity-checked process TERM/KILL;
 - a lifecycle-bound application log viewer filtered by Android UID.
@@ -330,7 +330,7 @@ without sound.
 
 ## Window And Input Behavior
 
-Applications remain native Android tasks. MagicDesk can launch them windowed
+Applications remain native Android tasks. MaterialDesk can launch them windowed
 or fullscreen, snap them, restore remembered freeform bounds, switch exact
 tasks with `Alt+Tab`, and preserve live layouts across desktop sessions.
 
@@ -344,7 +344,7 @@ the prior Android routing rather than forcing display 0.
 
 The phone touchpad uses one virtual relative mouse, with Android acceleration.
 The user's normal phone IME connects directly to the external editor through
-Android's display IME policy. MagicDesk does not select another IME or relay
+Android's display IME policy. MaterialDesk does not select another IME or relay
 editor text. Layout cycling uses Android's physical-layout mappings and enabled
 IME subtypes; shortcut filtering does not depend on a particular keyboard app.
 **Show keyboard on app display** in Settings or the taskbar context menu requests
@@ -354,7 +354,7 @@ without making the Desktop host focusable.
 
 ## Settings
 
-The Settings window controls persistent MagicDesk behavior, including:
+The Settings window controls persistent MaterialDesk behavior, including:
 
 - taskbar auto-hide;
 - single-click file activation;
@@ -384,7 +384,7 @@ separate from missing setup. Access reports
 the connected service identity; Termux distinguishes missing prerequisites from
 Available, Checking, Ready and Check failed, with details in its dialog. Available
 confirms the service and Android permission, not command execution. A one-shot
-asynchronous check runs on the first resumed MagicDesk UI with prerequisites met;
+asynchronous check runs on the first resumed MaterialDesk UI with prerequisites met;
 Ready confirms the command/result connection for this process. A timeout leaves
 Available. This can start Termux's service, but never opens its window or a PTY.
 There is no automatic retry on panel refresh or after a failed check. The dialog can request permission, copy a
@@ -394,7 +394,7 @@ Termux availability is independent of shell access.
 
 The taskbar sliders icon opens **Quick controls**, a content-sized panel above
 the taskbar with audio, interface scale, pointer speed, and available hardware
-controls. Its gear opens MagicDesk settings; the explicitly labelled Android
+controls. Its gear opens MaterialDesk settings; the explicitly labelled Android
 sound action opens Android's settings. Physical output mode belongs to the
 selected screen in Phone Control Panel before Desktop startup, not to global
 preferences.

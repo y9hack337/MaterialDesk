@@ -144,7 +144,7 @@ final class FileItemContextMenu {
                 LinearLayout.LayoutParams.WRAP_CONTENT));
 
         addAction(panel, ui, R.string.action_open,
-                DesktopUiFactory.COLOR_CYAN, true, dismiss, actions::open);
+                DesktopUiFactory.COLOR_ACCENT, true, dismiss, actions::open);
         addAction(panel, ui, R.string.file_manager_open_with,
                 DesktopUiFactory.COLOR_PANEL_ALT, !target.directory,
                 dismiss, actions::openWith);

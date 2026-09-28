@@ -38,12 +38,12 @@ public final class DiagnosticsActivity extends Activity {
             "io.github.mekhontsev.magicdesk.extra.SELF_TEST_EXECUTION_POLICY";
     static final String EXTRA_SELF_TEST_RUN_ID =
             "io.github.mekhontsev.magicdesk.extra.SELF_TEST_RUN_ID";
-    private static final int COLOR_BACKGROUND = 0xFF090D14;
-    private static final int COLOR_PANEL_ALT = 0xFF172033;
-    private static final int COLOR_TEXT = 0xFFE5E7EB;
-    private static final int COLOR_MUTED = 0xFF94A3B8;
-    private static final int COLOR_CYAN = 0xFF22D3EE;
-    private static final int COLOR_AMBER = 0xFFF59E0B;
+    private static final int COLOR_BACKGROUND = DesktopUiFactory.COLOR_BACKGROUND;
+    private static final int COLOR_PANEL_ALT = DesktopUiFactory.COLOR_PANEL_ALT;
+    private static final int COLOR_TEXT = DesktopUiFactory.COLOR_TEXT;
+    private static final int COLOR_MUTED = DesktopUiFactory.COLOR_MUTED;
+    private static final int COLOR_ACCENT = DesktopUiFactory.COLOR_ACCENT;
+    private static final int COLOR_AMBER = DesktopUiFactory.COLOR_AMBER;
 
     private static final String EXTRA_GUARD_RUN_ID = "magicdesk_self_test_guard_run_id";
     private static final String EXTRA_RESULT_RUN_ID = "magicdesk_self_test_result_run_id";
@@ -317,7 +317,7 @@ public final class DiagnosticsActivity extends Activity {
         page.addView(description, descriptionParams);
 
         mStatus = new TextView(this);
-        mStatus.setTextColor(COLOR_CYAN);
+        mStatus.setTextColor(COLOR_ACCENT);
         mStatus.setTextSize(14);
         mStatus.setTypeface(Typeface.DEFAULT_BOLD);
         page.addView(mStatus);
@@ -341,10 +341,10 @@ public final class DiagnosticsActivity extends Activity {
 
         final LinearLayout actions = new LinearLayout(this);
         actions.setOrientation(LinearLayout.HORIZONTAL);
-        mRefresh = createButton(R.string.diagnostics_refresh, COLOR_CYAN);
+        mRefresh = createButton(R.string.diagnostics_refresh, COLOR_ACCENT);
         mRefresh.setOnClickListener(view -> refreshReport());
         actions.addView(mRefresh, weightedButtonParams(0));
-        mCopy = createButton(R.string.diagnostics_copy, COLOR_CYAN);
+        mCopy = createButton(R.string.diagnostics_copy, COLOR_ACCENT);
         mCopy.setOnClickListener(view -> copyReport());
         actions.addView(mCopy, weightedButtonParams(dp(8)));
         mShare = createButton(R.string.diagnostics_share, COLOR_AMBER);
@@ -370,7 +370,7 @@ public final class DiagnosticsActivity extends Activity {
         page.addView(mSelfTest, selfTestParams);
 
         mOnboarding = createButton(
-                R.string.diagnostics_onboarding, COLOR_CYAN);
+                R.string.diagnostics_onboarding, COLOR_ACCENT);
         mOnboarding.setOnClickListener(view -> startActivity(
                 CompatibilityOnboardingActivity.createIntent(this)));
         final LinearLayout.LayoutParams onboardingParams =

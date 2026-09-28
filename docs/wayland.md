@@ -21,7 +21,7 @@ libraries (`libc`, `libm`, `libdl`, `libandroid`, `liblog`). The host renderer u
 
 The launch integration shares the X11 execution model: Termux is an optional
 client executor; shell clients use the explicitly authorized command identity,
-while their compositor runs under MagicDesk's app UID, never an elevated renderer
+while their compositor runs under MaterialDesk's app UID, never an elevated renderer
 UID. Termux clients use the compositor's private named socket, allowing each
 program and its children to establish independent connections. UID-2000 shell
 clients instead receive one connection FD. That FD belongs to one Wayland
@@ -276,7 +276,7 @@ same guest file environment; the renderer remains under the app UID.
 ## Native Shell Surfaces
 
 Integrated Linux shell components use the shared
-[shell layout model](shell-layout.md). A session explicitly binds to a MagicDesk
+[shell layout model](shell-layout.md). A session explicitly binds to a MaterialDesk
 workspace to contribute its panels and reservations. A nested Linux desktop
 retains its own scope and cannot reserve space on its containing Android Desktop.
 Native wlroots owns protocol validation, configure/ack, scene nodes and seat
@@ -317,7 +317,7 @@ An admitted workspace also supplies a `wlr-foreign-toplevel-management` catalog.
 It contains that workspace's managed Android task hosts, including hosted Linux
 applications, with opaque lifetime-bound handles. Activation, close, maximize,
 unmaximize, fullscreen and exit-fullscreen requests go through the same task
-gateway as MagicDesk's own controls. Minimize and unminimize map to Desktop
+gateway as MaterialDesk's own controls. Minimize and unminimize map to Desktop
 concealment and activation, preserving task mode, bounds and plane. Unbinding
 closes handles and revokes requests without closing those applications.
 Metadata/action processing is event-driven; pending wlroots idle notifications
@@ -445,7 +445,7 @@ build/wayland-tools/bin/pip install meson==1.9.1
 `magicDeskMeson` can explicitly select another Meson executable. The dependency
 build downloads pinned archives with SHA-256 verification, uses an isolated
 pkg-config prefix and disables external wlroots backends, XWayland and wlroots'
-GPU renderers. Composition uses MagicDesk's shared graphics backend.
+GPU renderers. Composition uses MaterialDesk's shared graphics backend.
 `wayland-runtime/native-deps/CMakeLists.txt` owns the source versions.
 The protocol scanner is built from the same pinned Wayland source for the
 build machine, separately from the target libraries. Its native pkg-config
@@ -616,7 +616,7 @@ Recent, managed placement, fullscreen/restore and cancelling a close confirmatio
 GTK clipboard text and file drag-and-drop pass in both directions with Android,
 including PRoot Ubuntu and Alpine chroot recipes with file-content hash verification.
 The chroot GTK client and guest-file helper run as UID 65534; the renderer stays
-under the MagicDesk app UID. `tests/gtk-guest-content.py` provides text/email/PIN
+under the MaterialDesk app UID. `tests/gtk-guest-content.py` provides text/email/PIN
 fields, clipboard actions, file drag endpoints and a dependent dialog for these
 checks. Same-session
 drags between Android hosts insert once. The X11 regression covers clipboard and
@@ -668,7 +668,7 @@ between displays with different automatic scales verifies scale publication and 
 
 Qt 6.11.2's text-input-v3 client can omit the final `commit` after surrounding-text
 deletion: its reselection handling clears `needsCommit`. The strict correction
-stage exposes this limitation; MagicDesk does not consume uncommitted client state.
+stage exposes this limitation; MaterialDesk does not consume uncommitted client state.
 `-e correction false` runs the other editor stages and explicitly reports correction
 as `NOT_TESTED`, not passed. See Qt's
 [text-input-v3 client](https://github.com/qt/qtbase/blob/v6.11.2/src/plugins/platforms/wayland/qwaylandtextinputv3.cpp).
@@ -684,7 +684,7 @@ results are not interchangeable with compositor GPU support.
 Root-broker validation on RM11/API 36 with SELinux Enforcing covers Alpine
 Weston terminals as root and UID 65534, independently launched and child
 connections, a nested Weston desktop, and a client detached from its launcher.
-The compositor remains the MagicDesk app UID. Normal session closure, cancellation
+The compositor remains the MaterialDesk app UID. Normal session closure, cancellation
 during startup and forced broker death release the owned processes and sockets;
 broker loss produces an explicit session failure. The transport fixtures verify
 partial writes, backpressure, descriptor ordering, EOF draining, ancillary

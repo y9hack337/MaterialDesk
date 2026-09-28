@@ -225,10 +225,20 @@ final class RuntimeDisplayInputCoordinator {
         return mInputSession.clickPointer(button);
     }
 
-    boolean scrollPointer(final int displayId, final float amount) {
+    /** A touchpad pinch becomes a touch pinch at the cursor on the input display. */
+    boolean pinchPointer(final int displayId, final int phase, final float scale) {
         return isInputDisplay(displayId)
                 && mInputSession.isPointerReady(displayId)
-                && mInputSession.scrollPointer(amount);
+                && ShellAccess.injectTouchpadPinch(displayId, phase, scale);
+    }
+
+    boolean scrollPointer(
+            final int displayId,
+            final float vertical,
+            final float horizontal) {
+        return isInputDisplay(displayId)
+                && mInputSession.isPointerReady(displayId)
+                && mInputSession.scrollPointer(vertical, horizontal);
     }
 
 

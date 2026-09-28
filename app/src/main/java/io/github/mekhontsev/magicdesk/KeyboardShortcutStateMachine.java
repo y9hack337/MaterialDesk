@@ -35,7 +35,13 @@ final class KeyboardShortcutStateMachine {
         DISPLAY_CANCEL,
         SCREENSHOT,
         SCREEN_RECORDING,
-        SHORTCUT_HELP
+        SHORTCUT_HELP,
+        TASK_VIEW,
+        FILES,
+        SEARCH,
+        RUN,
+        TASK_MANAGER,
+        REGION_SCREENSHOT
     }
 
 
@@ -165,6 +171,9 @@ final class KeyboardShortcutStateMachine {
         if (ctrl && !alt && !shift && !meta && key == KeyEvent.KEYCODE_SPACE) {
             return Action.TOGGLE_LAYOUT;
         }
+        if (ctrl && shift && !alt && !meta && key == KeyEvent.KEYCODE_ESCAPE) {
+            return Action.TASK_MANAGER;
+        }
         if (!ctrl && !alt && !shift && !meta && key == KeyEvent.KEYCODE_ESCAPE) {
             return Action.DISMISS;
         }
@@ -175,7 +184,8 @@ final class KeyboardShortcutStateMachine {
             return shift ? Action.SCREEN_RECORDING : Action.SCREENSHOT;
         }
         if (shift) {
-            return Action.NONE;
+            // Win + Shift + S: Windows' area screenshot.
+            return key == KeyEvent.KEYCODE_S ? Action.REGION_SCREENSHOT : Action.NONE;
         }
         return switch (key) {
             case KeyEvent.KEYCODE_DEL -> Action.BACK;
@@ -189,6 +199,10 @@ final class KeyboardShortcutStateMachine {
             case KeyEvent.KEYCODE_DPAD_RIGHT -> Action.SNAP_RIGHT;
             case KeyEvent.KEYCODE_D -> Action.SHOW_DESKTOP;
             case KeyEvent.KEYCODE_SLASH -> Action.SHORTCUT_HELP;
+            case KeyEvent.KEYCODE_TAB -> Action.TASK_VIEW;
+            case KeyEvent.KEYCODE_E -> Action.FILES;
+            case KeyEvent.KEYCODE_S -> Action.SEARCH;
+            case KeyEvent.KEYCODE_R -> Action.RUN;
             default -> Action.NONE;
         };
     }

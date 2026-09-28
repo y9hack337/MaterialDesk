@@ -46,10 +46,7 @@ final class DesktopWidgetPickerController {
         final LinearLayout panel = new LinearLayout(mActivity);
         panel.setOrientation(LinearLayout.VERTICAL);
         panel.setPadding(dp(14), dp(12), dp(14), dp(12));
-        panel.setBackground(mUi.rounded(
-                DesktopUiFactory.COLOR_PANEL,
-                dp(12),
-                DesktopUiFactory.COLOR_CYAN));
+        panel.setBackground(mUi.panelSurface());
         panel.setClickable(true);
         panel.addView(header(panels, panel), new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
@@ -94,12 +91,11 @@ final class DesktopWidgetPickerController {
         header.addView(title, new LinearLayout.LayoutParams(
                 0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
 
-        final Button close = mUi.smallButton(
+        final Button close = mUi.headerButton(
                 R.string.action_close,
                 DesktopUiFactory.COLOR_PANEL_ALT);
         close.setOnClickListener(view -> panels.hide(panel));
-        header.addView(close, new LinearLayout.LayoutParams(
-                dp(84), dp(34)));
+        header.addView(close, DesktopUiFactory.headerButtonParams(dp(40), dp(8)));
         return header;
     }
 
@@ -126,7 +122,7 @@ final class DesktopWidgetPickerController {
                 final TextView app = text(
                         choice.appLabel,
                         13,
-                        DesktopUiFactory.COLOR_CYAN);
+                        DesktopUiFactory.COLOR_ACCENT);
                 app.setTypeface(Typeface.DEFAULT_BOLD);
                 final LinearLayout.LayoutParams appParams =
                         new LinearLayout.LayoutParams(

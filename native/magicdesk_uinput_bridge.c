@@ -20,12 +20,17 @@
 #define MAGICDESK_MOUSE_PRODUCT_ID 0x0001
 #define MAGICDESK_MOUSE_LOCATION "magicdesk-mouse"
 #define WHEEL_HI_RES_UNITS_PER_STEP 120
+/* One command never scrolls more than this many detents on an axis. */
+#define WHEEL_MAX_HI_RES_UNITS (WHEEL_HI_RES_UNITS_PER_STEP * 1000)
 
 struct bridge_state {
     int uinput_fd;
     bool control_primary_down;
     uint64_t write_errors;
     uint64_t reports;
+    /* Hi-res units not yet reported as whole REL_WHEEL/REL_HWHEEL detents. */
+    int wheel_remainder;
+    int hwheel_remainder;
 };
 
 static volatile sig_atomic_t stop_requested;
@@ -103,21 +108,48 @@ static int emit_click(
             || emit_sync(state, uinput_fd) < 0 ? -1 : 0;
 }
 
-static int emit_wheel_steps(
+/*
+ * Reports high-resolution wheel motion so Android can scroll by fractions of
+ * a detent. Legacy REL_WHEEL/REL_HWHEEL detents follow once the accumulated
+ * units complete a step, as a physical high-resolution wheel reports them.
+ */
+static int emit_wheel_axis(
         struct bridge_state *state,
         const int uinput_fd,
-        const int steps) {
-    if (steps == 0) {
+        const unsigned short hi_res_code,
+        const unsigned short code,
+        const int units,
+        int *remainder) {
+    if (units == 0) {
         return 0;
     }
-    if (steps > INT_MAX / WHEEL_HI_RES_UNITS_PER_STEP
-            || steps < INT_MIN / WHEEL_HI_RES_UNITS_PER_STEP) return -1;
-    return emit_relative(
-                    state,
-                    uinput_fd,
-                    REL_WHEEL_HI_RES,
-                    steps * WHEEL_HI_RES_UNITS_PER_STEP) < 0
-            || emit_relative(state, uinput_fd, REL_WHEEL, steps) < 0
+    if (emit_relative(state, uinput_fd, hi_res_code, units) < 0) {
+        return -1;
+    }
+    *remainder += units;
+    const int detents = *remainder / WHEEL_HI_RES_UNITS_PER_STEP;
+    *remainder -= detents * WHEEL_HI_RES_UNITS_PER_STEP;
+    return detents == 0 ? 0 : emit_relative(state, uinput_fd, code, detents);
+}
+
+static int emit_wheel(
+        struct bridge_state *state,
+        const int uinput_fd,
+        const int vertical_units,
+        const int horizontal_units) {
+    if (vertical_units > WHEEL_MAX_HI_RES_UNITS
+            || vertical_units < -WHEEL_MAX_HI_RES_UNITS
+            || horizontal_units > WHEEL_MAX_HI_RES_UNITS
+            || horizontal_units < -WHEEL_MAX_HI_RES_UNITS) {
+        return -1;
+    }
+    if (vertical_units == 0 && horizontal_units == 0) {
+        return 0;
+    }
+    return emit_wheel_axis(state, uinput_fd, REL_WHEEL_HI_RES, REL_WHEEL,
+                    vertical_units, &state->wheel_remainder) < 0
+            || emit_wheel_axis(state, uinput_fd, REL_HWHEEL_HI_RES, REL_HWHEEL,
+                    horizontal_units, &state->hwheel_remainder) < 0
             || emit_sync(state, uinput_fd) < 0 ? -1 : 0;
 }
 
@@ -214,6 +246,16 @@ static int handle_control_line(
     if (strcmp(line, "click-secondary") == 0) {
         return emit_click(state, state->uinput_fd, BTN_RIGHT);
     }
+    if (strcmp(line, "click-middle") == 0) {
+        return emit_click(state, state->uinput_fd, BTN_MIDDLE);
+    }
+    /* Android maps these mouse buttons to Back and Forward navigation. */
+    if (strcmp(line, "click-back") == 0) {
+        return emit_click(state, state->uinput_fd, BTN_SIDE);
+    }
+    if (strcmp(line, "click-forward") == 0) {
+        return emit_click(state, state->uinput_fd, BTN_EXTRA);
+    }
     if (strcmp(line, "primary-down") == 0) {
         return set_control_primary(state, true);
     }
@@ -225,8 +267,8 @@ static int handle_control_line(
         emit_stats(state, request_id);
         return 0;
     }
-    if (sscanf(line, "scroll %d", &first) == 1) {
-        return emit_wheel_steps(state, state->uinput_fd, first);
+    if (sscanf(line, "scroll-hr %d %d", &first, &second) == 2) {
+        return emit_wheel(state, state->uinput_fd, first, second);
     }
     return -1;
 }

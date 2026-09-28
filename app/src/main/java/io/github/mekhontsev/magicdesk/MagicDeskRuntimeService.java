@@ -293,12 +293,20 @@ public final class MagicDeskRuntimeService extends Service
     }
 
     @Override
-    public boolean scrollPointer(
-            final int displayId,
-            final float amount) {
+    public boolean pinchPointer(final int displayId, final int phase, final float scale) {
         return !mDestroyed
                 && mDisplayInput != null
-                && mDisplayInput.scrollPointer(displayId, amount);
+                && mDisplayInput.pinchPointer(displayId, phase, scale);
+    }
+
+    @Override
+    public boolean scrollPointer(
+            final int displayId,
+            final float vertical,
+            final float horizontal) {
+        return !mDestroyed
+                && mDisplayInput != null
+                && mDisplayInput.scrollPointer(displayId, vertical, horizontal);
     }
 
 
@@ -344,6 +352,16 @@ public final class MagicDeskRuntimeService extends Service
     @Override
     public boolean toggleShortcutHelp(final int displayId) {
         return !mDestroyed && DesktopRuntimeBridge.toggleShortcutHelp(displayId);
+    }
+
+    @Override
+    public boolean openBuiltin(final int displayId, final String builtin) {
+        return !mDestroyed && DesktopRuntimeBridge.openBuiltin(displayId, builtin);
+    }
+
+    @Override
+    public boolean toggleTaskOverview(final int displayId) {
+        return !mDestroyed && DesktopRuntimeBridge.toggleTaskOverview(displayId);
     }
 
     @Override

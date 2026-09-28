@@ -80,6 +80,8 @@ public final class DesktopStateStoreTest {
         source.settings.keyboardOnAppDisplay = true;
         source.settings.compatibility.put(DesktopCompatibilityPolicy.Option.FOCUS_REPAIR, true);
         source.settings.openFilesWithSingleClick = true;
+        source.settings.touchpadInvertScrolling = true;
+        source.settings.touchpadNavigationSwipe = false;
 
         final DisplayProfileStore.Profile profile =
                 new DisplayProfileStore.Profile("display:primary");
@@ -125,6 +127,8 @@ public final class DesktopStateStoreTest {
         assertTrue(decoded.settings.copy().keyboardOnAppDisplay);
         assertEquals(Boolean.TRUE, decoded.settings.compatibility.get(DesktopCompatibilityPolicy.Option.FOCUS_REPAIR));
         assertTrue(decoded.settings.openFilesWithSingleClick);
+        assertTrue(decoded.settings.copy().touchpadInvertScrolling);
+        assertFalse(decoded.settings.copy().touchpadNavigationSwipe);
         final DisplayProfileStore.Profile decodedProfile =
                 decoded.displayProfiles.get("display:primary");
         assertEquals(160, decodedProfile.dpi);
@@ -176,6 +180,8 @@ public final class DesktopStateStoreTest {
         assertFalse(
                 decoded.settings.disableAdaptiveBrightness);
         assertFalse(decoded.settings.openFilesWithSingleClick);
+        assertFalse(decoded.settings.touchpadInvertScrolling);
+        assertTrue(decoded.settings.touchpadNavigationSwipe);
     }
 
     @Test(expected = org.json.JSONException.class)

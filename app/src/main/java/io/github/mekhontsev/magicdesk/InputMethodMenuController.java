@@ -40,7 +40,7 @@ final class InputMethodMenuController {
         if (panels == null) {
             return;
         }
-        if (panels.isRequested(mPanel)) {
+        if (panels.isShowing(mPanel)) {
             mGeneration++;
             panels.hide(mPanel);
             return;
@@ -88,10 +88,7 @@ final class InputMethodMenuController {
         mContent.setOrientation(LinearLayout.VERTICAL);
         mContent.setPadding(dp(8, 6), dp(8, 6), dp(8, 6), dp(8, 6));
         mPanel.addView(mContent, new ScrollView.LayoutParams(-1, -2));
-        mPanel.setBackground(mUi.rounded(
-                DesktopUiFactory.COLOR_PANEL,
-                dp(8, 6),
-                DesktopUiFactory.COLOR_CYAN));
+        mPanel.setBackground(mUi.menuSurface());
         mPanel.setClickable(true);
     }
 
@@ -112,7 +109,7 @@ final class InputMethodMenuController {
             final boolean selected = id.equals(current);
             final Button button = mUi.actionButton(
                     selected ? "\u2713 " + label : label.toString(),
-                    selected ? DesktopUiFactory.COLOR_CYAN
+                    selected ? DesktopUiFactory.COLOR_ACCENT
                             : DesktopUiFactory.COLOR_PANEL_ALT);
             button.setGravity(Gravity.START | Gravity.CENTER_VERTICAL);
             button.setOnClickListener(view -> select(id));
@@ -142,7 +139,7 @@ final class InputMethodMenuController {
         }
         for (final HardwareKeyboardLayouts.Choice choice : layouts.choices()) {
             final Button button = mUi.menuItem(choice.selected() ? "\u2713 " + choice.label() : choice.label(), choice.selected()
-                    ? DesktopUiFactory.COLOR_CYAN : DesktopUiFactory.COLOR_PANEL_ALT);
+                    ? DesktopUiFactory.COLOR_ACCENT : DesktopUiFactory.COLOR_PANEL_ALT);
             button.setSelected(choice.selected());
             button.setTooltipText(choice.label());
             button.setOnClickListener(view -> {

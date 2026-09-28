@@ -101,6 +101,16 @@ public final class SettingsActivity extends Activity
     }
 
     @Override
+    public void setTouchpadInvertScrolling(final boolean enabled) {
+        saveSetting(MagicDeskSettings.setTouchpadInvertScrolling(enabled));
+    }
+
+    @Override
+    public void setTouchpadNavigationSwipe(final boolean enabled) {
+        saveSetting(MagicDeskSettings.setTouchpadNavigationSwipe(enabled));
+    }
+
+    @Override
     public void setOpenTouchpadAutomatically(final boolean enabled) {
         saveSetting(
                 MagicDeskSettings.setOpenTouchpadAutomatically(enabled));

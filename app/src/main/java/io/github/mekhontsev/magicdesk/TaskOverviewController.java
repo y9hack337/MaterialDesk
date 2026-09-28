@@ -37,10 +37,7 @@ final class TaskOverviewController {
         final LinearLayout panel = new LinearLayout(mActivity);
         panel.setOrientation(LinearLayout.VERTICAL);
         panel.setPadding(dp(14), dp(14), dp(14), dp(12));
-        panel.setBackground(mUi.rounded(
-                DesktopUiFactory.COLOR_PANEL,
-                dp(8),
-                DesktopUiFactory.COLOR_CYAN));
+        panel.setBackground(mUi.panelSurface());
         panel.setVisibility(View.GONE);
         panel.setClickable(true);
         panel.setFocusable(true);
@@ -120,7 +117,7 @@ final class TaskOverviewController {
         header.addView(title, new LinearLayout.LayoutParams(
                 0, LinearLayout.LayoutParams.WRAP_CONTENT, 1));
 
-        final Button showDesktop = mUi.smallButton(
+        final Button showDesktop = mUi.headerButton(
                 R.string.action_show_desktop,
                 DesktopUiFactory.COLOR_PANEL_ALT);
         showDesktop.setOnClickListener(view ->
@@ -128,20 +125,15 @@ final class TaskOverviewController {
         mActivity.registerAutomationUiElement(
                 showDesktop, "open_tasks.show_desktop", "button",
                 showDesktop.getText());
-        header.addView(showDesktop, new LinearLayout.LayoutParams(
-                dp(120), LinearLayout.LayoutParams.WRAP_CONTENT));
+        header.addView(showDesktop, DesktopUiFactory.headerButtonParams(dp(40), dp(8)));
 
-        final Button close = mUi.smallButton(
+        final Button close = mUi.headerButton(
                 R.string.action_close,
                 DesktopUiFactory.COLOR_PANEL_ALT);
         close.setOnClickListener(view -> mActivity.hideAllPanels());
         mActivity.registerAutomationUiElement(
                 close, "open_tasks.close", "button", close.getText());
-        final LinearLayout.LayoutParams closeParams =
-                new LinearLayout.LayoutParams(
-                        dp(82), LinearLayout.LayoutParams.WRAP_CONTENT);
-        closeParams.setMargins(dp(8), 0, 0, 0);
-        header.addView(close, closeParams);
+        header.addView(close, DesktopUiFactory.headerButtonParams(dp(40), dp(8)));
         mPanel.addView(header, new LinearLayout.LayoutParams(
                 LinearLayout.LayoutParams.MATCH_PARENT,
                 LinearLayout.LayoutParams.WRAP_CONTENT));
@@ -243,13 +235,13 @@ final class TaskOverviewController {
             final boolean selected) {
         final FrameLayout tile = new FrameLayout(mActivity);
         tile.setBackground(mUi.rounded(
-                DesktopUiFactory.COLOR_PANEL_ALT,
-                dp(6),
                 selected
-                        ? DesktopUiFactory.COLOR_AMBER
-                        : (task.active
-                                ? DesktopUiFactory.COLOR_CYAN
-                                : DesktopUiFactory.COLOR_PANEL_ALT)));
+                        ? DesktopUiFactory.COLOR_SECONDARY_CONTAINER
+                        : DesktopUiFactory.COLOR_PANEL_ALT,
+                dp(DesktopUiFactory.SHAPE_LARGE_DP),
+                selected || task.active
+                        ? DesktopUiFactory.COLOR_ACCENT
+                        : DesktopUiFactory.COLOR_PANEL_ALT));
         tile.setClickable(true);
         tile.setFocusable(true);
         tile.setOnClickListener(view -> {

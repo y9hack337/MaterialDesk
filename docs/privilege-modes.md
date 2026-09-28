@@ -8,13 +8,13 @@ boundaries. A missing Desktop capability does not disable an independent tool.
 
 | Boundary | Identity and authority |
 | --- | --- |
-| Ordinary UI and Android content integration | MagicDesk app UID and its Android permissions |
+| Ordinary UI and Android content integration | MaterialDesk app UID and its Android permissions |
 | Privileged files, shell, display, task and input operations | One authorized command service, normally shell UID 2000; started through Shizuku or optional `su` |
-| Termux commands and PTYs | Termux UID, with its external-command configuration and MagicDesk's `RUN_COMMAND` grant |
-| Embedded X11 servers and clients | Termux route: selected Termux UID. Shell route: server under MagicDesk's app UID, commands under the captured authorized service UID. Per-session Xauthority and Binder lifetime; renderer always uses the app UID. No per-command elevation or fallback. |
+| Termux commands and PTYs | Termux UID, with its external-command configuration and MaterialDesk's `RUN_COMMAND` grant |
+| Embedded X11 servers and clients | Termux route: selected Termux UID. Shell route: server under MaterialDesk's app UID, commands under the captured authorized service UID. Per-session Xauthority and Binder lifetime; renderer always uses the app UID. No per-command elevation or fallback. |
 | Embedded Wayland servers and clients | Termux route: selected Termux UID and private named socket. Shell route: app-UID compositor and one inherited client connection. Root chroot route: app-UID compositor and a session-owned broker under the already-selected root executor, with verified anonymous-buffer admission. No renderer elevation or global SELinux changes. |
 | MCP request | Listener token and grants, followed by the operation's service and Android permission checks |
-| Built-in CLI | Private channel inherited by a MagicDesk-launched shell; the same service prerequisites and operation implementation as MCP |
+| Built-in CLI | Private channel inherited by a MaterialDesk-launched shell; the same service prerequisites and operation implementation as MCP |
 | Optional Kernel Fixes APK | Separate application with an explicit root workflow; never a main-APK dependency |
 
 `RuntimeCapabilities` reports prerequisites; it does not grant permissions
@@ -55,7 +55,7 @@ Desktop still requires privileged access, API 35 and completed device setup.
 Changing a limit does not interrupt current work: full Exit cleans up with the
 active policy before reopening applies the new one. It does not change Shizuku's
 UID, revoke Android permissions, or undo persistent Desktop setup. Limits govern
-MagicDesk service entry points, not arbitrary programs launched by an authorized
+MaterialDesk service entry points, not arbitrary programs launched by an authorized
 shell or Termux client. `RuntimeCapabilities` intersects them with actual capabilities;
 MCP grants remain a separate boundary. Diagnostics publish active and configured limits.
 
@@ -65,7 +65,7 @@ effective UID, not the selected launcher or its installation status. It updates
 on service events. Tapping **Access** shows the startup method, effective UID
 and active access ceiling; requesting access is an explicit dialog action.
 A pending startup-policy change asks the user to Exit and
-reopen MagicDesk. Full Exit performs normal cleanup first, suppresses rebinding,
+reopen MaterialDesk. Full Exit performs normal cleanup first, suppresses rebinding,
 and always ends the app process. Reopening captures all saved startup settings,
 including integration packages; a Desktop Close does neither.
 
@@ -122,7 +122,7 @@ stay internal. URI grants, app identity and shell placement authority are
 checked independently.
 
 Android intent integration checks whether the target is accessible to the
-MagicDesk application. Shell supplies placement authority, not permission to
+MaterialDesk application. Shell supplies placement authority, not permission to
 launch arbitrary protected targets on behalf of the app. App-authorized
 PendingIntents retain their creator identity and grants.
 
@@ -159,13 +159,13 @@ Desktop shortcuts from confirmed desktop keyboards, not ordinary editor text,
 and requests no window-content access. Its session-owned enablement preserves
 other Accessibility services. Layout cycling resolves Android physical-keyboard
 layouts against enabled IME subtypes and synchronizes the selected subtype.
-An IME must expose those languages through Android; MagicDesk does not choose
+An IME must expose those languages through Android; MaterialDesk does not choose
 a replacement IME.
 
 The phone touchpad owns one virtual relative mouse. Android handles cursor
 acceleration, hover, dragging and right click. The external editor connects
 directly to the user's normal phone IME through Android's display IME policy.
-MagicDesk does not capture or relay its text.
+MaterialDesk does not capture or relay its text.
 
 Close releases routing, shortcut enablement and the phone pointer only if that
 workspace still owns input. Owned display removal also releases input targeting
@@ -176,7 +176,7 @@ Managed Desktop temporarily holds HOME across all active workspaces. Closing the
 last workspace restores the previous role state before tearing down its remaining
 task surfaces. Disabling HOME components is a later cleanup phase, so Android
 cannot remove a live host during task release.
-Inactive MagicDesk HOME components are disabled. Startup recovery relinquishes
+Inactive MaterialDesk HOME components are disabled. Startup recovery relinquishes
 stale HOME ownership before either privilege backend starts.
 
 ## MCP Access
@@ -203,7 +203,7 @@ authenticated client; additional grants cover:
 - File reads/downloads.
 - File writes/uploads.
 - Shell commands, terminals and background execution.
-- MagicDesk APK updates.
+- MaterialDesk APK updates.
 
 These are operation gates, not isolation between mutually untrusted clients.
 Shell access can read and modify files; input can operate privileged UI.
@@ -242,7 +242,7 @@ input-routing substitute or startup write. Close leaves it unchanged.
 By contrast, HOME, input routes, display-default mode, external IME policy and
 managed task density have session owners and restoration rules. Display
 resources have their own lifetime: Close does not remove them, and removal
-requires verified MagicDesk ownership.
+requires verified MaterialDesk ownership.
 
 **Restore defaults** removes Desktop setup overrides and primary-display
 size/density/scaling overrides, and normalizes stale phone tasks. It restores
@@ -251,7 +251,7 @@ system defaults, not arbitrary earlier installation values.
 ## Optional Phone Power And Hardware
 
 Phone-screen power control uses discovered Android display commands.
-The optional Nubia background-work provider protects MagicDesk and the selected
+The optional Nubia background-work provider protects MaterialDesk and the selected
 display's application UIDs through transient `cfreezer` working-state hints.
 The phone-power guard and bounded automation work share this scoped owner;
 neither relies on HOME exemption. UID 2000 remains sufficient on tested firmware.
@@ -272,6 +272,6 @@ Stable and development APKs use the same signing certificate. Its SHA-256 is:
 ```
 
 The main APK contains no kernel module or loader. The independent
-**MagicDesk Kernel Fixes** APK has its own explicit root workflow and is not
-discovered or launched by MagicDesk. Its exact firmware restrictions are in
+**MaterialDesk Kernel Fixes** APK has its own explicit root workflow and is not
+discovered or launched by MaterialDesk. Its exact firmware restrictions are in
 [VITURE XR resolution fix](xr-resolution-fix.md).

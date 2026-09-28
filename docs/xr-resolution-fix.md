@@ -35,11 +35,11 @@ registers two temporary kernel probes:
 This preserves a valid manual mode choice. There is no userspace polling,
 artificial hotplug, timing delay, boot image patch, or Magisk module.
 
-The main MagicDesk APK does not contain a kernel module or any code that
+The main MaterialDesk APK does not contain a kernel module or any code that
 discovers or launches the add-on. The optional, separately installed
-**MagicDesk Kernel Fixes** APK packages the tested module as
+**MaterialDesk Kernel Fixes** APK packages the tested module as
 [`kernel-fixes/src/main/res/raw/dp_mode_reset.ko`](../kernel-fixes/src/main/res/raw/dp_mode_reset.ko).
-Tagged MagicDesk releases do not publish this firmware-specific add-on; it is
+Tagged MaterialDesk releases do not publish this firmware-specific add-on; it is
 intended for source builds and controlled validation on the exact target.
 The user opens its independent launcher icon and presses **Activate**. The
 add-on then:
@@ -54,7 +54,7 @@ add-on then:
 
 The module lives only in kernel memory. It must be activated manually once
 after every reboot, before changing the glasses' refresh or 3D mode. A reboot
-unloads it automatically. MagicDesk itself never requests root for this
+unloads it automatically. MaterialDesk itself never requests root for this
 operation.
 
 ## Validated target
@@ -82,7 +82,7 @@ runtime driver becomes unstable.
 
 ## Source layout
 
-All MagicDesk-owned files required to reproduce and package the fix are in this
+All MaterialDesk-owned files required to reproduce and package the fix are in this
 repository:
 
 - `kernel/xr-resolution-fix/dp_mode_reset.c`: module source
@@ -100,7 +100,7 @@ They are large upstream build inputs and must match the identifiers above.
 ## Rebuild in Termux
 
 The Android kernel build expects a normal glibc Linux host. On-device builds
-use Ubuntu from `proot-distro`, while the MagicDesk project remains in the
+use Ubuntu from `proot-distro`, while the MaterialDesk project remains in the
 Termux home directory.
 
 Install the container:
@@ -144,7 +144,7 @@ kernel_aarch64_dot_config
 kernel_aarch64_Module.symvers
 ```
 
-Run the guarded build script from the MagicDesk repository:
+Run the guarded build script from the MaterialDesk repository:
 
 ```sh
 ./scripts/build-xr-resolution-fix.sh \

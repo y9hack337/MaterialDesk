@@ -231,6 +231,11 @@ public final class TaskDisplayAreaLaunchCommand {
             System.out.println(taskMove
                     ? "task-freeform-move=" + taskId
                     : "task-display-area-launch=" + taskId);
+            System.out.flush();
+            // Framework clients started by the transition (organizer and
+            // Binder callbacks) can leave non-daemon threads behind; the
+            // caller waits for this process to exit, so end it explicitly.
+            System.exit(0);
         } catch (ReflectiveOperationException | RuntimeException error) {
             System.err.println("freeform task transition failed: "
                     + usefulMessage(error));
@@ -355,6 +360,8 @@ public final class TaskDisplayAreaLaunchCommand {
         FrameworkActivityLaunchApi.setActivityType(options, FrameworkTaskSnapshot.ACTIVITY_TYPE_STANDARD);
         if (launchBehind) {
             FrameworkActivityLaunchApi.avoidMoveToFront(options);
+        } else {
+            FrameworkActivityLaunchApi.useDesktopOpenAnimation(options);
         }
         final TaskLaunchBaseline baseline = taskBaselineBeforeLaunch(
                 service, displayId);
@@ -594,6 +601,8 @@ public final class TaskDisplayAreaLaunchCommand {
         }
         if (launchBehind) {
             FrameworkActivityLaunchApi.avoidMoveToFront(options);
+        } else {
+            FrameworkActivityLaunchApi.useDesktopOpenAnimation(options);
         }
         final TaskLaunchBaseline baseline = taskBaselineBeforeLaunch(
                 service, displayId);

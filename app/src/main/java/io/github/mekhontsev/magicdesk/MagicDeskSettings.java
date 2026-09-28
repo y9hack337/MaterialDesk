@@ -47,6 +47,14 @@ final class MagicDeskSettings {
                 state -> state.settings.openTouchpadAutomatically = enabled);
     }
 
+    static boolean setTouchpadInvertScrolling(final boolean enabled) {
+        return DesktopStateStore.update(state -> state.settings.touchpadInvertScrolling = enabled);
+    }
+
+    static boolean setTouchpadNavigationSwipe(final boolean enabled) {
+        return DesktopStateStore.update(state -> state.settings.touchpadNavigationSwipe = enabled);
+    }
+
     static boolean setKeyboardOnAppDisplay(final boolean enabled) {
         return DesktopStateStore.update(state -> state.settings.keyboardOnAppDisplay = enabled);
     }
@@ -79,6 +87,8 @@ final class MagicDeskSettings {
         private static final String KEYBOARD_ON_APP_DISPLAY = "keyboardOnAppDisplay";
         private static final String OPEN_FILES_WITH_SINGLE_CLICK =
                 "openFilesWithSingleClick";
+        private static final String TOUCHPAD_INVERT_SCROLLING = "touchpadInvertScrolling";
+        private static final String TOUCHPAD_NAVIGATION_SWIPE = "touchpadNavigationSwipe";
 
         boolean taskbarAutoHide;
         boolean keepDesktopAwake;
@@ -92,10 +102,15 @@ final class MagicDeskSettings {
         final java.util.EnumMap<DesktopCompatibilityPolicy.Option, Boolean> compatibility =
                 new java.util.EnumMap<>(DesktopCompatibilityPolicy.Option.class);
         boolean openFilesWithSingleClick;
+        /** Content follows the fingers (natural scrolling) instead of the wheel. */
+        boolean touchpadInvertScrolling;
+        /** A quick horizontal two-finger flick is Back / Forward. */
+        boolean touchpadNavigationSwipe;
 
         static Values defaults() {
             final Values values = new Values();
             values.openTouchpadAutomatically = true;
+            values.touchpadNavigationSwipe = true;
             return values;
         }
 
@@ -125,6 +140,10 @@ final class MagicDeskSettings {
                 }
                 values.openFilesWithSingleClick = json.optBoolean(
                         OPEN_FILES_WITH_SINGLE_CLICK, false);
+                values.touchpadInvertScrolling = json.optBoolean(
+                        TOUCHPAD_INVERT_SCROLLING, false);
+                values.touchpadNavigationSwipe = json.optBoolean(
+                        TOUCHPAD_NAVIGATION_SWIPE, true);
             }
             return values;
         }
@@ -142,6 +161,8 @@ final class MagicDeskSettings {
             copy.keyboardOnAppDisplay = keyboardOnAppDisplay;
             copy.compatibility.putAll(compatibility);
             copy.openFilesWithSingleClick = openFilesWithSingleClick;
+            copy.touchpadInvertScrolling = touchpadInvertScrolling;
+            copy.touchpadNavigationSwipe = touchpadNavigationSwipe;
             return copy;
         }
 
@@ -167,6 +188,8 @@ final class MagicDeskSettings {
             json.put(
                     OPEN_FILES_WITH_SINGLE_CLICK,
                     openFilesWithSingleClick);
+            json.put(TOUCHPAD_INVERT_SCROLLING, touchpadInvertScrolling);
+            json.put(TOUCHPAD_NAVIGATION_SWIPE, touchpadNavigationSwipe);
             return json;
         }
 

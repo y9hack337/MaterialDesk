@@ -91,6 +91,19 @@ sealed interface ShellPanelPlacement {
         }
     }
 
+    /** Covers the whole output, taskbar included, e.g. for screen-area selection. */
+    record FullOutput() implements ShellPanelPlacement {
+        @Override public ShellSurface.Placement resolve(final ShellLayout.Snapshot layout) {
+            return new ShellSurface.Placement(ShellSurface.Reference.OUTPUT,
+                    ShellSurface.LEFT | ShellSurface.TOP | ShellSurface.RIGHT | ShellSurface.BOTTOM,
+                    0, 0, ShellSurface.Margins.NONE);
+        }
+    }
+
+    static ShellPanelPlacement fullOutput() {
+        return new FullOutput();
+    }
+
     static ShellPanelPlacement anchored(final int width, final int height, final int anchors,
             final int left, final int top, final int right, final int bottom) {
         return new Anchored(width, height, anchors, new ShellSurface.Margins(left, top, right, bottom));

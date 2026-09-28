@@ -710,6 +710,15 @@ final class DesktopUiGateway {
         return true;
     }
 
+    boolean toggleTaskOverview(final int displayId) {
+        final DesktopShellActivity activity = usableDesktop(displayId, true);
+        if (activity == null) {
+            return false;
+        }
+        postToHost(activity, activity::toggleTaskOverview);
+        return true;
+    }
+
     boolean toggleNotificationCenter(final int displayId) {
         final DesktopShellActivity activity = usableDesktop(displayId, true);
         if (activity == null) {
@@ -762,6 +771,9 @@ final class DesktopUiGateway {
                 break;
             case "task_manager":
                 action = activity::openTaskManager;
+                break;
+            case "region_screenshot":
+                action = activity::startRegionScreenshot;
                 break;
             case "settings":
                 action = activity::openSettings;

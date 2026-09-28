@@ -40,6 +40,7 @@ public final class MagicDeskRuntimeTest {
         assertFalse(MagicDeskRuntime.finishAltTab(7));
         assertFalse(MagicDeskRuntime.cancelAltTab(7));
         assertFalse(MagicDeskRuntime.toggleShortcutHelp(7));
+        assertFalse(MagicDeskRuntime.toggleTaskOverview(7));
         assertFalse(MagicDeskRuntime.toggleNotificationCenter(7));
         assertFalse(MagicDeskRuntime.toggleSystemPanel(7));
         assertFalse(MagicDeskRuntime.openSettings(7));
@@ -71,6 +72,7 @@ public final class MagicDeskRuntimeTest {
         assertTrue(MagicDeskRuntime.finishAltTab(7));
         assertTrue(MagicDeskRuntime.cancelAltTab(7));
         assertTrue(MagicDeskRuntime.toggleShortcutHelp(7));
+        assertTrue(MagicDeskRuntime.toggleTaskOverview(7));
         assertTrue(MagicDeskRuntime.toggleNotificationCenter(7));
         assertTrue(MagicDeskRuntime.toggleSystemPanel(7));
         assertTrue(MagicDeskRuntime.openSettings(7));
@@ -85,7 +87,7 @@ public final class MagicDeskRuntimeTest {
         assertEquals(7, mAttached.preservedDesktopDisplayId);
         assertTrue(mAttached.parkingCleared);
         assertTrue(mAttached.startShown);
-        assertEquals(0x1ff, mAttached.uiCommands);
+        assertEquals(0x3ff, mAttached.uiCommands);
     }
 
     @Test
@@ -312,8 +314,15 @@ public final class MagicDeskRuntimeTest {
         }
 
         @Override
+        public boolean pinchPointer(final int displayId, final int phase, final float scale) {
+            return true;
+        }
+
+        @Override
         public boolean scrollPointer(
-                final int displayId, final float amount) {
+                final int displayId,
+                final float vertical,
+                final float horizontal) {
             return true;
         }
 
@@ -377,6 +386,18 @@ public final class MagicDeskRuntimeTest {
         public boolean toggleShortcutHelp(final int displayId) {
             assertEquals(7, displayId);
             uiCommands |= 16;
+            return true;
+        }
+
+        @Override
+        public boolean openBuiltin(final int displayId, final String builtin) {
+            return true;
+        }
+
+        @Override
+        public boolean toggleTaskOverview(final int displayId) {
+            assertEquals(7, displayId);
+            uiCommands |= 512;
             return true;
         }
 

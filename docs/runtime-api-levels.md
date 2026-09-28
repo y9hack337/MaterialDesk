@@ -2,7 +2,7 @@
 
 ## Supported Contract
 
-The MagicDesk APK minimum is Android 14 / API 34. Managed Desktop requires
+The MaterialDesk APK minimum is Android 14 / API 34. Managed Desktop requires
 Android 15 / API 35. These are separate contracts within one APK, not separate
 builds or platform forks. Android 14 is the selected installation baseline;
 device validation on that release is still pending.
@@ -10,11 +10,11 @@ device validation on that release is still pending.
 | Subsystem | Baseline and prerequisites |
 | --- | --- |
 | MCP and ordinary built-in UI | API 34; explicit client grants for automation. Network MCP additionally needs Android's local-network runtime permission on API 37+. Loopback is independent. UI startup does not require Desktop provisioning. |
-| Built-in CLI | API 34; an inherited MagicDesk shell channel. Each command retains its own prerequisites; MCP enablement and installed Termux are not required. |
+| Built-in CLI | API 34; an inherited MaterialDesk shell channel. Each command retains its own prerequisites; MCP enablement and installed Termux are not required. |
 | Script dialogs and notifications | API 34; MCP content grant or inherited CLI channel. Background dialog placement requires the shared privileged launcher; notifications require Android notification permission/channel access. No Desktop or Termux prerequisite. |
 | Files, shell commands and transfers | API 34 plus authorized privileged service for shell-backed operations. |
 | Termux sessions and viewers | API 34 plus installed Termux, external-command configuration and `RUN_COMMAND` permission. The PTY and its window have separate lifetimes. |
-| Embedded X11 | API 34 plus an explicitly selected executor and XKB data. Termux uses its UID and `RUN_COMMAND`; shell uses the authorized command service for clients and MagicDesk's app UID for the X server. Prepared chroot entry requires actual UID 0, not merely a Root setting. The renderer loads only on explicit session startup. Ordinary Android grants handle clipboard/drop content. No Termux:X11 APK, Desktop or HOME prerequisite; Termux remains usable without privileged access. |
+| Embedded X11 | API 34 plus an explicitly selected executor and XKB data. Termux uses its UID and `RUN_COMMAND`; shell uses the authorized command service for clients and MaterialDesk's app UID for the X server. Prepared chroot entry requires actual UID 0, not merely a Root setting. The renderer loads only on explicit session startup. Ordinary Android grants handle clipboard/drop content. No Termux:X11 APK, Desktop or HOME prerequisite; Termux remains usable without privileged access. |
 | Embedded Wayland | API 34 plus an explicitly selected executor and XKB data. Termux uses its UID and private named socket, including PRoot guest recipes. UID-2000 shell clients receive a single connection FD from an app-UID compositor. Root chroot clients use a session-owned named-socket broker with verified anonymous-buffer admission; the compositor remains unprivileged. Software rendering, host input, clipboard and drag grants do not require Desktop or HOME. Device coverage is recorded in [Wayland](wayland.md). |
 | APK replacement | API 34 plus authorized privileged service and the update grant. Android's PackageInstaller and its shell callback own replacement; the update worker survives replacement and reconnect is observed by update ID. |
 | Display discovery and interactive tool placement | API 34. Without shell, public DisplayManager inventory and Activity launch options serve accessible displays. Android checks each Intent/destination and secondary-Activity support. No Desktop or HOME prerequisite. |
